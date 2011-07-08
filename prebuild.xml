@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
-    <!-- Core TerrainTools Project -->
+    <!-- Core osboids Project -->
 
-    <Project name="Flocking" path="addon-modules/flocking/Flocking/" type="Library">
+    <Project name="Flocking" path="addon-modules/osboids/Flocking/" type="Library">
       <Configuration name="Debug">
         <Options>
 		<OutputPath>../../../bin/</OutputPath>
@@ -19,7 +19,6 @@
       <Reference name="System.Drawing" />
       <Reference name="System.Xml"/>
       <Reference name="Nini"  path="../../../bin/" />
-      <!--Reference name="Mono.Cecil" path="../../../bin/" /-->
       <Reference name="OpenSim.Framework"  path="../../../bin/" />
       <Reference name="OpenSim.Framework.Communications" path="../../../bin/" />
       <Reference name="OpenSim.Region.Framework" path="../../../bin/" />
