@@ -1,0 +1,16 @@
+Placeholder.... - preliminary commit
+
+Region Module -  ability to control flocks within an OpenSim scene
+
+Build instructions
+Add source tree under opensim/addon-modules
+
+./runprebuild.sh to build the module into a local server
+
+Prebuilt binaries etc.. to follow 
+
+Currently only tested against opensim master
+
+Status: pre alpha
+
+Licence: all files released under a BSD licence

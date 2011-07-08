@@ -1,0 +1,5 @@
+/Users/jon/osim/opensim/bin/Flocking.dll.mdb
+/Users/jon/osim/opensim/bin/Flocking.dll
+/Users/jon/osim/opensim/addon-modules/flocking/Flocking/obj/Debug/Flocking.dll
+/Users/jon/osim/opensim/addon-modules/flocking/Flocking/obj/Debug/Flocking.dll.mdb
+/Users/jon/osim/opensim/addon-modules/flocking/Flocking/obj/Debug/Flocking.Resources.Flocking.addin.xml
