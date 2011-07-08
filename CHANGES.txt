@@ -1,0 +1,7 @@
+
+08/07/2011 - Initial pre alpha release
+	Basic Flocking algos implemented
+	Border avoidance not so good
+	No configuration capabilities 
+
+

@@ -1,0 +1,22 @@
+
+
+TODO:
+
+Expose Settings to ini Files
+
+Write in world Chat controller to allow maintenance of flocking in world.
+
+Handle Borders Correctly
+
+Handle Collision Avoidance
+
+Handle Wander
+
+Handle Perching
+
+Handle Predator Avoidance
+
+
+Optimise it all...
+
+Look at maintaining flocks across sim boundaries.
