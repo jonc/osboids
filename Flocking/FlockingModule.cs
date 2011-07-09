@@ -146,19 +146,14 @@ namespace Flocking
 		
 		protected void SimChatSent (Object x, OSChatMessage msg)
 		{
-			m_log.Info ("got msg");
-			if (m_scene.ConsoleScene () != m_scene)
+			if (m_scene.ConsoleScene () != m_scene || msg.Channel != m_chatChannel)
 				return; // not for us
 
-			m_log.Info ("got channel" + msg.Channel);
-			if (msg.Channel != m_chatChannel)
-				return; // not for us
-			
 			// try and parse a valid cmd from this msg
 			string cmd = msg.Message.ToLower ();
-			m_log.Info ("got cmd " + cmd);
 			
 			//stick ui in the args so we know to respond in world
+			//bit of a hack - but lets us us CommandDelegate inWorld
 			string[] args = (cmd + " <ui>").Split (" ".ToCharArray ());
 			
 			if (cmd.StartsWith ("stop")) {
@@ -257,12 +252,9 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				lock( m_sync ) {
-					//m_enabled = false;
-					//m_log.Info( args );
 					int newSize = Convert.ToInt32(args[1]);
 					m_model.Size = newSize;
 					m_view.Clear();
-					//m_enabled = true;
 				}
 			}
 		}
@@ -278,7 +270,6 @@ namespace Flocking
 		public void HandleSetPrimCmd (string module, string[] args)
 		{
 			if (ShouldHandleCmd ()) {
-				//m_log.Info ("set prim not implemented yet");
 				string primName = args[1];
 				lock(m_sync) {
 					m_view.BoidPrim = primName;

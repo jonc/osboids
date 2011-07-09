@@ -34,8 +34,6 @@ namespace Flocking
 {
 	public class FlockingView
 	{
-		private const float DEG_TO_RAD = 0.01745329238f;
-		
 		private Scene m_scene;
 		private UUID m_owner;
 		private String m_boidPrim;
@@ -89,27 +87,19 @@ namespace Flocking
 			}
 			
 			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, boid.Location);
-			sog.UpdateGroupPosition(boid.Location);
-			sog.UpdateGroupRotationR (rotation);
+			sog.UpdateGroupRotationPR( boid.Location, rotation);
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)
 		{
+			//llSetRot(llRotBetween(<1,0,0>,llVecNorm(targetPosition - llGetPos())));
+			// boid wil fly x forwards and Z up
+			
 			Vector3 currDirVec = Vector3.UnitX;
-			float angle = 0f;
-
-			copy.GroupRotation.GetAxisAngle (out currDirVec, out angle);
-			currDirVec.Normalize ();
-
-
 			Vector3 desiredDirVec = Vector3.Subtract (ev, sv);
 			desiredDirVec.Normalize ();
 
 			Quaternion rot = Vector3.RotationBetween (currDirVec, desiredDirVec);
-
-			//Quaternion x90 = Quaternion.CreateFromEulers (90f * DEG_TO_RAD, 0f, 0f);
-			//rot = rot * x90;
-			
 			return rot;
 		}
 		
