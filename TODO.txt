@@ -4,7 +4,7 @@ TODO:
 
 Expose Settings to ini Files
 
-Write in world Chat controller to allow maintenance of flocking in world.
+[done] Write in world Chat controller to allow maintenance of flocking in world.
 
 Handle Borders Correctly
 

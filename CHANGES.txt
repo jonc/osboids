@@ -4,4 +4,8 @@
 	Border avoidance not so good
 	No configuration capabilities 
 
-
+09/07/2011
+	Fixed Boid rotation, boid now orients with direction of travel
+	added command handlers for both console and inworld chat channel
+	added commands for setting size of flock, prim to use for boid
+	added commands to start and stop the boids flocking 
