@@ -171,6 +171,8 @@ namespace Flocking
 				HandleShowStatsCmd ("flock", args);
 			} else if (cmd.StartsWith ("prim")) {
 				HandleSetPrimCmd ("flock", args);
+			} else if (cmd.StartsWith ("framerate")) {
+				HandleSetFrameRateCmd ("flock", args);
 			}
 			
 		}
@@ -195,6 +197,7 @@ namespace Flocking
 			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
 			AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
 			AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
+			AddCommand ("framerate", "num", "[debugging] only update boids every <num> frames", HandleSetFrameRateCmd);
 		}
 		
 		private bool ShouldHandleCmd ()
@@ -230,6 +233,14 @@ namespace Flocking
 				m_log.Info ("stop the flocking capability");
 				m_enabled = false;
 				m_view.Clear ();
+			}
+		}
+
+		void HandleSetFrameRateCmd (string module, string[] args)
+		{
+			if (ShouldHandleCmd ()) {
+				int frameRate = Convert.ToInt32( args[1] );
+				m_frameUpdateRate = frameRate;
 			}
 		}
 
