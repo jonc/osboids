@@ -40,43 +40,51 @@ namespace Flocking
 		private UUID m_owner;
 		
 		private Dictionary<string, SceneObjectGroup> m_sogMap = new Dictionary<string, SceneObjectGroup> ();
-		
+				
 		public FlockingView (Scene scene)
 		{
 			m_scene = scene;	
 		}
 		
-		public void PostInitialize ()
+		public void PostInitialize (UUID owner)
 		{
-			m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
+			m_owner = owner;
 		}
+
+		public void Clear ()
+		{
+            //trash everything we have
+            foreach (string name in m_sogMap.Keys)
+            {
+                RemoveSOGFromScene(name);
+            }
+            m_sogMap.Clear();
+ 		}
 
 		public void Render (List<Boid> boids)
 		{
 			foreach (Boid boid in boids) {
-				SceneObjectGroup sog = DrawBoid (boid);
-				//sog.ScheduleGroupForTerseUpdate ();
+				DrawBoid (boid);
 			}
 		}
 		
-		private SceneObjectGroup DrawBoid (Boid boid)
+		private void DrawBoid (Boid boid)
 		{
 			SceneObjectPart existing = m_scene.GetSceneObjectPart (boid.Id);
 
 
-			SceneObjectGroup copy;
+			SceneObjectGroup sog;
 			if (existing == null) {
 				SceneObjectGroup group = findByName ("boidPrim");
-				copy = CopyPrim (group, boid.Id);
-				m_sogMap [boid.Id] = copy;
-				m_scene.AddNewSceneObject (copy, false);
+				sog = CopyPrim (group, boid.Id);
+				m_sogMap [boid.Id] = sog;
+				m_scene.AddNewSceneObject (sog, false);
 			} else {
-				copy = existing.ParentGroup;
+				sog = existing.ParentGroup;
 			}
 			
-			Quaternion rotation = CalcRotationToEndpoint (copy, copy.AbsolutePosition, boid.Location);
-			copy.UpdateGroupRotationPR (boid.Location, rotation);
-			return copy;
+			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, boid.Location);
+			sog.UpdateGroupRotationPR (boid.Location, rotation);
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)
@@ -138,6 +146,12 @@ namespace Flocking
 			return prim;
 		}
 
+        private void RemoveSOGFromScene(string sogName)
+        {
+            SceneObjectGroup sog = m_sogMap[sogName];
+            m_scene.DeleteSceneObject(sog, false);
+
+        }
 
 
 	}

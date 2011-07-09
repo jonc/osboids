@@ -34,6 +34,9 @@ namespace Flocking
 	{
         private  List<Boid> flock = new List<Boid>();
 		
+		public int Size {
+			get {return flock.Count;}
+		}
 				
 		public void Initialise (int num, int xRange, int yRange, int zRange)
 		{
