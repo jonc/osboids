@@ -84,7 +84,8 @@ namespace Flocking
 			}
 			
 			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, boid.Location);
-			sog.UpdateGroupRotationPR (boid.Location, rotation);
+			sog.UpdateGroupPosition(boid.Location);
+			sog.UpdateGroupRotationR (rotation);
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)

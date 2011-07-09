@@ -37,31 +37,24 @@ using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
 
-
-
 namespace Flocking
 {
 	public class FlockingModule : INonSharedRegionModule
 	{
 
 		private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
+		static object m_sync = new object();
 
 		private Scene m_scene;
-		
 		private FlockingModel m_model;
 		private FlockingView m_view;
-
 		private bool m_enabled = false;
 		private bool m_ready = false;
-       	
 		private uint m_frame = 0;
-        private int m_frameUpdateRate = 1;
-		
+		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
 		private string m_boidPrim;
-		
 		private UUID m_owner;
-
 
 		#region IRegionModule Members
 
@@ -71,10 +64,10 @@ namespace Flocking
 		{
 			//check if we are in the ini files
 			//if so get some physical constants out of them and pass into the model
-			IConfig config = source.Configs["Boids"];
+			IConfig config = source.Configs ["Boids"];
 			if (config != null) {
-				m_chatChannel = config.GetInt( "chat-channel", 118 );
-				m_boidPrim = config.GetString( "boid-prim", "boidPrim" );
+				m_chatChannel = config.GetInt ("chat-channel", 118);
+				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
 				
 				// we're in the config - so turn on this module
 				m_enabled = true;
@@ -83,18 +76,18 @@ namespace Flocking
 
 		public void AddRegion (Scene scene)
 		{
-			m_log.Info("ADDING FLOCKING");
+			m_log.Info ("ADDING FLOCKING");
 			m_scene = scene;
 			if (m_enabled) {
 				//register commands
-				RegisterCommands();
+				RegisterCommands ();
 				
 				//register handlers
 				m_scene.EventManager.OnFrame += FlockUpdate;
 				m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
 
 				// init module
-				m_model = new FlockingModel();
+				m_model = new FlockingModel ();
 				m_view = new FlockingView (m_scene);
 			}
 		}
@@ -102,15 +95,15 @@ namespace Flocking
 		public void RegionLoaded (Scene scene)
 		{
 			if (m_enabled) {
-                // Generate initial flock values
-                m_model.Initialise( 200, 255, 255, 255);
+				// Generate initial flock values
+				m_model.Initialise (200, 255, 255, 255);
 				
 				// who is the owner for the flock in this region
 				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
-				m_view.PostInitialize(m_owner);
+				m_view.PostInitialize (m_owner);
 
-                // Mark Module Ready for duty
-                m_ready = true;
+				// Mark Module Ready for duty
+				m_ready = true;
 			}
 		}
 
@@ -121,7 +114,6 @@ namespace Flocking
 				m_scene.EventManager.OnChatFromClient -= SimChatSent;
 			}
 		}
-
 
 		public string Name {
 			get { return "FlockingModule"; }
@@ -135,48 +127,49 @@ namespace Flocking
 		
 		#region EventHandlers
 		
-		public void FlockUpdate()
-        {
-            if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || !m_enabled)
-            {
-                return;
-            }
+		public void FlockUpdate ()
+		{
+			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || !m_enabled) {
+				return;
+			}
 			
 			//m_log.InfoFormat("update my boids");
 			
 			// work out where everyone has moved to
 			// and tell the scene to render the new positions
-            List<Boid> boids = m_model.UpdateFlockPos();
-            m_view.Render(boids);
-        }
+			lock( m_sync ) {
+				List<Boid > boids = m_model.UpdateFlockPos ();
+				m_view.Render (boids);
+			}
+		}
 		
 		protected void SimChatSent (Object x, OSChatMessage msg)
 		{
-			m_log.Info("got msg");
+			m_log.Info ("got msg");
 			if (m_scene.ConsoleScene () != m_scene)
 				return; // not for us
 
-			m_log.Info("got channel" + msg.Channel);
+			m_log.Info ("got channel" + msg.Channel);
 			if (msg.Channel != m_chatChannel)
 				return; // not for us
 			
 			// try and parse a valid cmd from this msg
 			string cmd = msg.Message.ToLower ();
-			m_log.Info("got cmd " + cmd);
+			m_log.Info ("got cmd " + cmd);
 			
 			//stick ui in the args so we know to respond in world
-			string[] args = ("<ui> " + cmd).Split (" ".ToCharArray ());
+			string[] args = (cmd + " <ui>").Split (" ".ToCharArray ());
 			
 			if (cmd.StartsWith ("stop")) {
-				HandleStopCmd("flock", args);
-			} else if ( cmd.StartsWith( "start" ) ) {
-				HandleStartCmd("flock", args);
-			} else if ( cmd.StartsWith( "size" ) ) {
-				HandleSetSizeCmd("flock", args);
-			} else if ( cmd.StartsWith ( "stats" ) ) {
-				HandleShowStatsCmd("flock", args );
-			} else if ( cmd.StartsWith ( "prim" ) ) {
-				HandleSetPrimCmd("flock", args);
+				HandleStopCmd ("flock", args);
+			} else if (cmd.StartsWith ("start")) {
+				HandleStartCmd ("flock", args);
+			} else if (cmd.StartsWith ("size")) {
+				HandleSetSizeCmd ("flock", args);
+			} else if (cmd.StartsWith ("stats")) {
+				HandleShowStatsCmd ("flock", args);
+			} else if (cmd.StartsWith ("prim")) {
+				HandleSetPrimCmd ("flock", args);
 			}
 			
 		}
@@ -188,14 +181,14 @@ namespace Flocking
 		private void AddCommand (string cmd, string args, string help, CommandDelegate fn)
 		{
 			string argStr = "";
-			if( args.Trim().Length > 0 ) {
+			if (args.Trim ().Length > 0) {
 				argStr = " <" + args + "> ";
 			}
 			m_scene.AddCommand (this, "flock-" + cmd, "flock-" + cmd + argStr, help, fn);
 		}
 
-
-		private void RegisterCommands() {
+		private void RegisterCommands ()
+		{
 			AddCommand ("stop", "", "Stop all Flocking", HandleStopCmd);
 			AddCommand ("start", "", "Start Flocking", HandleStartCmd);
 			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
@@ -203,70 +196,80 @@ namespace Flocking
 			AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
 		}
 		
-		private bool ShouldHandleCmd() {
+		private bool ShouldHandleCmd ()
+		{
 			return m_scene.ConsoleScene () == m_scene;
 		}
 		
-		private bool IsInWorldCmd( ref string [] args ) {
+		private bool IsInWorldCmd (ref string [] args)
+		{
 			bool retVal = false;
 			
-			if( args.Length > 0 && args[0].Equals("<ui>") ) {
+			if (args.Length > 0 && args [args.Length - 1].Equals ("<ui>")) {
 				retVal = true;	
 			}
 			return retVal;
 		}
 		
-		private void ShowResponse(string response, bool inWorld) {
-				if( inWorld ){
-					IClientAPI ownerAPI = null;
-					if( m_scene.TryGetClient( m_owner, out ownerAPI ) ) {
-					ownerAPI.SendBlueBoxMessage( m_owner,"osboids", response );
+		private void ShowResponse (string response, bool inWorld)
+		{
+			if (inWorld) {
+				IClientAPI ownerAPI = null;
+				if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
+					ownerAPI.SendBlueBoxMessage (m_owner, "osboids", response);
 				}
-				} else {
-					MainConsole.Instance.Output (response);
-				}
+			} else {
+				MainConsole.Instance.Output (response);
+			}
 		}
 		
 		public void HandleStopCmd (string module, string[] args)
 		{
-			if( ShouldHandleCmd() ) {
-				m_log.Info("stop the flocking capability");
+			if (ShouldHandleCmd ()) {
+				m_log.Info ("stop the flocking capability");
 				m_enabled = false;
-				m_view.Clear();
+				m_view.Clear ();
 			}
 		}
 
 		public void HandleStartCmd (string module, string[] args)
 		{
-			if( ShouldHandleCmd() ) {
-				m_log.Info("start the flocking capability");
+			if (ShouldHandleCmd ()) {
+				m_log.Info ("start the flocking capability");
 				m_enabled = true;
-				FlockUpdate();
+				FlockUpdate ();
 			}
 		}
 
 		public void HandleSetSizeCmd (string module, string[] args)
 		{
-			if( ShouldHandleCmd() ) {
-				m_log.Info("set size not implemented yet");
+			if (ShouldHandleCmd ()) {
+				lock( m_sync ) {
+					//m_enabled = false;
+					//m_log.Info( args );
+					int newSize = Convert.ToInt32(args[1]);
+					m_model.Size = newSize;
+					m_view.Clear();
+					//m_enabled = true;
+				}
 			}
 		}
 		
 		public void HandleShowStatsCmd (string module, string[] args)
 		{
-			if( ShouldHandleCmd() ) {
-				bool inWorld = IsInWorldCmd( ref args );
-				ShowResponse("Num Boids = " + m_model.Size, inWorld );
+			if (ShouldHandleCmd ()) {
+				bool inWorld = IsInWorldCmd (ref args);
+				ShowResponse ("Num Boids = " + m_model.Size, inWorld);
 			}
 		}
-				
 		
 		public void HandleSetPrimCmd (string module, string[] args)
 		{
-			if( ShouldHandleCmd() ) {
-				m_log.Info("set prim not implemented yet");
+			if (ShouldHandleCmd ()) {
+				m_log.Info ("set prim not implemented yet");
 			}
 		}
+
 		#endregion
 
 
@@ -278,8 +281,6 @@ namespace Flocking
 		public void Close ()
 		{
 		}
-
-
 
 		public Type ReplaceableInterface {
 			get { return null; }

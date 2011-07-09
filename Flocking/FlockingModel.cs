@@ -34,17 +34,39 @@ namespace Flocking
 	{
         private  List<Boid> flock = new List<Boid>();
 		
+		private int m_xRange = 200;
+		private int m_yRange = 200;
+		private int m_zRange = 200;
+		
 		public int Size {
 			get {return flock.Count;}
+			set {
+				if( value < flock.Count ) {
+					flock.RemoveRange( 0, flock.Count - value );
+				} else while( value > flock.Count ) {
+					AddBoid( "boid"+flock.Count);	
+				}
+			}
 		}
+
+		void AddBoid (string name)
+		{
+			Boid boid = new Boid (name, 3.0f, 0.05f);
+			boid.Location = new Vector3 (m_xRange / 2f, m_yRange / 2f, m_zRange / 2f);
+			flock.Add (boid);
+		}
+						
+						
 				
 		public void Initialise (int num, int xRange, int yRange, int zRange)
 		{
+			m_xRange = xRange;
+			m_yRange = yRange;
+			m_zRange = zRange;
+			
 			//TODO: fill in the initial Flock array properly
   			for (int i = 0; i < num; i++) {
-    			Boid boid = new Boid ("boid"+i, 3.0f, 0.05f);
-				boid.Location = new Vector3 (xRange / 2f, yRange / 2f, zRange / 2f);
-    			flock.Add (boid);
+				AddBoid ("boid"+i );
   			}
 		}
 
