@@ -89,6 +89,7 @@ namespace Flocking
 				// init module
 				m_model = new FlockingModel ();
 				m_view = new FlockingView (m_scene);
+				m_view.BoidPrim = m_boidPrim;
 			}
 		}
 
@@ -266,7 +267,12 @@ namespace Flocking
 		public void HandleSetPrimCmd (string module, string[] args)
 		{
 			if (ShouldHandleCmd ()) {
-				m_log.Info ("set prim not implemented yet");
+				//m_log.Info ("set prim not implemented yet");
+				string primName = args[1];
+				lock(m_sync) {
+					m_view.BoidPrim = primName;
+					m_view.Clear();
+				}
 			}
 		}
 

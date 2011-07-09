@@ -38,6 +38,7 @@ namespace Flocking
 		
 		private Scene m_scene;
 		private UUID m_owner;
+		private String m_boidPrim;
 		
 		private Dictionary<string, SceneObjectGroup> m_sogMap = new Dictionary<string, SceneObjectGroup> ();
 				
@@ -49,6 +50,10 @@ namespace Flocking
 		public void PostInitialize (UUID owner)
 		{
 			m_owner = owner;
+		}
+		
+		public String BoidPrim {
+			set{ m_boidPrim = value;}
 		}
 
 		public void Clear ()
@@ -75,7 +80,7 @@ namespace Flocking
 
 			SceneObjectGroup sog;
 			if (existing == null) {
-				SceneObjectGroup group = findByName ("boidPrim");
+				SceneObjectGroup group = findByName (m_boidPrim);
 				sog = CopyPrim (group, boid.Id);
 				m_sogMap [boid.Id] = sog;
 				m_scene.AddNewSceneObject (sog, false);
@@ -137,7 +142,7 @@ namespace Flocking
 		private SceneObjectGroup MakeDefaultPrim (string name)
 		{
 			PrimitiveBaseShape shape = PrimitiveBaseShape.CreateSphere ();
-			shape.Scale = new Vector3 (0.5f, 0.5f, 2.5f);
+			shape.Scale = new Vector3 (0.5f, 0.5f, 0.5f);
 
 			SceneObjectGroup prim = new SceneObjectGroup (m_owner, new Vector3 (128f, 128f, 25f), shape);
 			prim.Name = name;
