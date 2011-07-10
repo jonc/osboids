@@ -34,6 +34,11 @@ namespace Flocking
 	{
         private List<Boid> m_flock = new List<Boid>();
 		private FlowMap m_flowMap;
+		private float m_maxSpeed;
+		private float m_maxForce;
+		private float m_neighbourDistance;
+		private float m_desiredSeparation;
+		private float m_tolerance;
 		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
@@ -47,10 +52,18 @@ namespace Flocking
 				}
 			}
 		}
+		
+		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance ) {
+			m_maxSpeed = maxSpeed;
+			m_maxForce = maxForce;
+			m_neighbourDistance = neighbourDistance;
+			m_desiredSeparation = desiredSeparation;
+			m_tolerance = tolerance;
+		}
 
 		void AddBoid (string name)
 		{
-			Boid boid = new Boid (name, 3.0f, 0.05f, m_flowMap);
+			Boid boid = new Boid (name, this, m_flowMap);
 			
 			// find an initial random location for this Boid
 			// somewhere not within an obstacle
@@ -68,8 +81,27 @@ namespace Flocking
 			m_flock.Add (boid);
 		}
 						
-						
+		public float MaxSpeed {
+			get {return m_maxSpeed;}
+		}
 				
+		public float MaxForce {
+			get {return m_maxForce;}
+		}
+
+		public float NeighbourDistance {
+			get {return m_neighbourDistance;}
+		}
+				
+		public float DesiredSeparation {
+			get {return m_desiredSeparation;}
+		}
+				
+		public float Tolerance {
+			get {return m_tolerance;}
+		}
+				
+
 		public void Initialise (int num, FlowMap flowMap)
 		{
 			m_flowMap = flowMap;			

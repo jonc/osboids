@@ -40,13 +40,8 @@ namespace Flocking
 		private Vector3 m_vel;
 		private Vector3 m_acc;
 		private Random m_rndnums = new Random (Environment.TickCount);
-		private float m_tolerance;		// how close can we get to things witout being edgy	 
-		private float m_maxForce;    	// Maximum steering force
-		private float m_maxSpeed;    	// Maximum speed
-				
-		private float m_neighborDist = 25.0f;
-		private float m_desiredSeparation = 20.0f;
 		
+		private FlockingModel m_model;
 		private FlowMap m_flowMap;
 
 		
@@ -62,14 +57,12 @@ namespace Flocking
 		/// <param name='mf'>
 		/// Mf. max force / acceleration this boid can extert
 		/// </param>
-		public Boid (string id, float ms, float mf, FlowMap flowMap)
+		public Boid (string id, FlockingModel model, FlowMap flowMap)
 		{
 			m_id = id;
 			m_acc = Vector3.Zero;
 			m_vel = new Vector3 (m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1));
-			m_tolerance = 5.0f;
-			m_maxSpeed = ms;
-			m_maxForce = mf;
+			m_model = model;
 			m_flowMap = flowMap;
 		}
 		
@@ -159,7 +152,7 @@ namespace Flocking
 			m_vel += m_acc;
 			// Limit speed
 			//m_vel.limit(maxspeed);
-			m_vel = Util.Limit (m_vel, m_maxSpeed);
+			m_vel = Util.Limit (m_vel, m_model.MaxSpeed);
 			m_loc += m_vel;
 			// Reset accelertion to 0 each cycle
 			m_acc *= 0.0f;
@@ -201,15 +194,15 @@ namespace Flocking
 				desired.Normalize ();
 				// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
 				if ((slowdown) && (d < 100.0f)) { 
-					desired *= (m_maxSpeed * (d / 100.0f)); // This damping is somewhat arbitrary
+					desired *= (m_model.MaxSpeed * (d / 100.0f)); // This damping is somewhat arbitrary
 				} else { 
-					desired *= m_maxSpeed;
+					desired *= m_model.MaxSpeed;
 				}
 				// Steering = Desired minus Velocity
 				//steer = target.sub(desired,m_vel);
 				steer = Vector3.Subtract (desired, m_vel);
 				//steer.limit(maxforce);  // Limit to maximum steering force
-				steer = Util.Limit (steer, m_maxForce);
+				steer = Util.Limit (steer, m_model.MaxForce);
 			} else {
 				steer = Vector3.Zero;
 			}
@@ -226,7 +219,7 @@ namespace Flocking
 		{
 			//look tolerance metres ahead
 			Vector3 normVel = Vector3.Normalize(m_vel);
-			Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_tolerance);
+			Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_model.Tolerance);
 			if( m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
 				AdjustVelocityToAvoidObstacles ();
 	
@@ -243,7 +236,7 @@ namespace Flocking
 				normVel.X += xDelta;
 				normVel.Y += yDelta;
 				normVel.Z += zDelta;
-				Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_tolerance);
+				Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_model.Tolerance);
 				if( !m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
 					m_vel.X += xDelta;
 					m_vel.Y += yDelta;
@@ -280,7 +273,7 @@ namespace Flocking
 			foreach (Boid other in boids) {
 				float d = Vector3.Distance (m_loc, other.Location);
 				// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-				if ((d > 0) && (d < m_desiredSeparation)) {
+				if ((d > 0) && (d < m_model.DesiredSeparation)) {
 					// Calculate vector pointing away from neighbor
 					Vector3 diff = Vector3.Subtract (m_loc, other.Location);
 					diff.Normalize ();
@@ -298,10 +291,10 @@ namespace Flocking
 			if (steer.Length () > 0) {
 				// Implement Reynolds: Steering = Desired - Velocity
 				steer.Normalize ();
-				steer *= m_maxSpeed;
+				steer *= m_model.MaxSpeed;
 				steer -= m_vel;
 				//steer.limit(maxforce);
-				steer = Util.Limit (steer, m_maxForce);
+				steer = Util.Limit (steer, m_model.MaxForce);
 			}
 			return steer;
 		}
@@ -320,7 +313,7 @@ namespace Flocking
 			int count = 0;
 			foreach (Boid other in boids) {
 				float d = Vector3.Distance (m_loc, other.Location);
-				if ((d > 0) && (d < m_neighborDist)) {
+				if ((d > 0) && (d < m_model.NeighbourDistance)) {
 					steer += other.Velocity;
 					count++;
 				}
@@ -333,10 +326,10 @@ namespace Flocking
 			if (steer.Length () > 0) {
 				// Implement Reynolds: Steering = Desired - Velocity
 				steer.Normalize ();
-				steer *= m_maxSpeed;
+				steer *= m_model.MaxSpeed;
 				steer -= m_vel;
 				//steer.limit(maxforce);
-				steer = Util.Limit (steer, m_maxForce);
+				steer = Util.Limit (steer, m_model.MaxForce);
 				
 			}
 			return steer;
@@ -357,7 +350,7 @@ namespace Flocking
 			
 			foreach (Boid other in boids) {
 				float d = Vector3.Distance (m_loc, other.Location);
-				if ((d > 0) && (d < m_neighborDist)) {
+				if ((d > 0) && (d < m_model.NeighbourDistance)) {
 					sum += other.Location; // Add location
 					count++;
 				}

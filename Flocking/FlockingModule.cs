@@ -55,6 +55,12 @@ namespace Flocking
 		private int m_chatChannel = 118;
 		private string m_boidPrim;
 		private int m_flockSize = 100;
+		private float m_maxSpeed;
+		private float m_maxForce;
+		private float m_neighbourDistance;
+		private float m_desiredSeparation;
+		private float m_tolerance;
+
 		private UUID m_owner;
 
 		#region IRegionModule Members
@@ -70,6 +76,12 @@ namespace Flocking
 				m_chatChannel = config.GetInt ("chat-channel", 118);
 				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
 				m_flockSize = config.GetInt ("flock-size", 100);
+				m_maxSpeed = config.GetFloat("max-speed", 3f);
+				m_maxForce = config.GetFloat("max-force", 0.25f);
+				m_neighbourDistance = config.GetFloat("neighbour-dist", 25f);
+				m_desiredSeparation = config.GetFloat("desired-separation", 20f);
+				m_tolerance = config.GetFloat("tolerance", 5f);
+				
 				
 				// we're in the config - so turn on this module
 				m_enabled = true;
@@ -89,7 +101,7 @@ namespace Flocking
 				m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
 
 				// init module
-				m_model = new FlockingModel ();
+				m_model = new FlockingModel (m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance);
 				m_view = new FlockingView (m_scene);
 				m_view.BoidPrim = m_boidPrim;
 			}

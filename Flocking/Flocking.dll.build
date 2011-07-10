@@ -20,6 +20,7 @@
 				  <include name="FlockingModel.cs" />
 				  <include name="FlockingModule.cs" />
 				  <include name="FlockingView.cs" />
+				  <include name="FlowMap.cs" />
 				  <include name="Util.cs" />
 			  </sources>
 			  <references basedir="${project::get-base-directory()}">
