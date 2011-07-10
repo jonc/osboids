@@ -32,39 +32,47 @@ namespace Flocking
 {
 	public class FlockingModel
 	{
-        private  List<Boid> flock = new List<Boid>();
+        private List<Boid> m_flock = new List<Boid>();
+		private FlowMap m_flowMap;
 		
-		private int m_xRange = 200;
-		private int m_yRange = 200;
-		private int m_zRange = 200;
+		private Random m_rnd = new Random(Environment.TickCount);
 		
 		public int Size {
-			get {return flock.Count;}
+			get {return m_flock.Count;}
 			set {
-				if( value < flock.Count ) {
-					flock.RemoveRange( 0, flock.Count - value );
-				} else while( value > flock.Count ) {
-					AddBoid( "boid"+flock.Count);	
+				if( value < m_flock.Count ) {
+					m_flock.RemoveRange( 0, m_flock.Count - value );
+				} else while( value > m_flock.Count ) {
+					AddBoid( "boid"+m_flock.Count);	
 				}
 			}
 		}
 
 		void AddBoid (string name)
 		{
-			Boid boid = new Boid (name, 3.0f, 0.05f);
-			boid.Location = new Vector3 (m_xRange / 2f, m_yRange / 2f, m_zRange / 2f);
-			flock.Add (boid);
+			Boid boid = new Boid (name, 3.0f, 0.05f, m_flowMap);
+			
+			// find an initial random location for this Boid
+			// somewhere not within an obstacle
+			int xInit = m_rnd.Next(m_flowMap.LengthX);
+			int yInit = m_rnd.Next(m_flowMap.LengthY);
+			int zInit = m_rnd.Next(m_flowMap.LengthZ);
+			
+			while( m_flowMap.IsWithinObstacle( xInit, yInit, zInit ) ){
+				xInit = m_rnd.Next(m_flowMap.LengthX);
+				yInit = m_rnd.Next(m_flowMap.LengthY);
+				zInit = m_rnd.Next(m_flowMap.LengthZ);
+			}
+				
+			boid.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
+			m_flock.Add (boid);
 		}
 						
 						
 				
-		public void Initialise (int num, int xRange, int yRange, int zRange)
+		public void Initialise (int num, FlowMap flowMap)
 		{
-			m_xRange = xRange;
-			m_yRange = yRange;
-			m_zRange = zRange;
-			
-			//TODO: fill in the initial Flock array properly
+			m_flowMap = flowMap;			
   			for (int i = 0; i < num; i++) {
 				AddBoid ("boid"+i );
   			}
@@ -72,11 +80,11 @@ namespace Flocking
 
 		public List<Boid> UpdateFlockPos ()
 		{
-    		foreach (Boid b in flock) {
-      			b.MoveInSceneRelativeToFlock(flock);  // Passing the entire list of boids to each boid individually
+    		foreach (Boid b in m_flock) {
+      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of boids to each boid individually
     		}
 			
-			return flock;
+			return m_flock;
 		}
 	}
 }

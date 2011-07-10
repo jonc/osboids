@@ -26,28 +26,28 @@
  */
 using System;
 using System.Collections.Generic;
+using log4net;
 using OpenMetaverse;
 
 namespace Flocking
 {
 	public class Boid
 	{
+		private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
 		private string m_id;
 		
 		private Vector3 m_loc;
-		private Quaternion m_rotation;
 		private Vector3 m_vel;
 		private Vector3 m_acc;
 		private Random m_rndnums = new Random (Environment.TickCount);
 		private float m_tolerance;		// how close can we get to things witout being edgy	 
 		private float m_maxForce;    	// Maximum steering force
 		private float m_maxSpeed;    	// Maximum speed
-		
-		private float m_width = 255f;
-		private float m_height = 255f;
-		
+				
 		private float m_neighborDist = 25.0f;
 		private float m_desiredSeparation = 20.0f;
+		
+		private FlowMap m_flowMap;
 
 		
 		/// <summary>
@@ -62,15 +62,15 @@ namespace Flocking
 		/// <param name='mf'>
 		/// Mf. max force / acceleration this boid can extert
 		/// </param>
-		public Boid (string id, float ms, float mf)
+		public Boid (string id, float ms, float mf, FlowMap flowMap)
 		{
 			m_id = id;
 			m_acc = Vector3.Zero;
 			m_vel = new Vector3 (m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1));
-    
-			m_tolerance = 2.0f;
+			m_tolerance = 5.0f;
 			m_maxSpeed = ms;
 			m_maxForce = mf;
+			m_flowMap = flowMap;
 		}
 		
 		public Vector3 Location {
@@ -80,10 +80,6 @@ namespace Flocking
 
 		public Vector3 Velocity {
 			get { return m_vel;}
-		}
-		
-		public Quaternion Rotation {
-			get { return m_rotation; }
 		}
 		
 		public String Id {
@@ -98,14 +94,19 @@ namespace Flocking
 		/// </param>
 		public void MoveInSceneRelativeToFlock (List<Boid> boids)
 		{
-			Vector3 previousLoc = new Vector3( m_loc );
+			// we would like to stay with our mates
 			Flock (boids);
+
+			// our first priority is to not hurt ourselves
+			AvoidObstacles ();
+			
+			// then we want to avoid any threats
+			//		this not implemented yet
+			
+			
+			// ok so we worked our where we want to go, so ...
 			UpdatePositionInScene ();
-			AvoidBorders ();
 			
-			m_rotation = Vector3.RotationBetween( previousLoc, m_loc );
-			
-			//render();
 		}
 
 		/// <summary>
@@ -221,8 +222,40 @@ namespace Flocking
 		/// if we get too close wrap us around 
 		/// CHANGE THIS to navigate away from whatever it is we are too close to
 		/// </summary>
-		void AvoidBorders ()
+		void AvoidObstacles ()
 		{
+			//look tolerance metres ahead
+			Vector3 normVel = Vector3.Normalize(m_vel);
+			Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_tolerance);
+			if( m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
+				AdjustVelocityToAvoidObstacles ();
+	
+			}
+		}
+
+		void AdjustVelocityToAvoidObstacles ()
+		{
+			for( int i = 1; i < 5; i++ ) {
+				Vector3 normVel = Vector3.Normalize(m_vel);
+				int xDelta = m_rndnums.Next (-i, i);
+				int yDelta = m_rndnums.Next (-i, i);
+				int zDelta = m_rndnums.Next (-i, i);
+				normVel.X += xDelta;
+				normVel.Y += yDelta;
+				normVel.Z += zDelta;
+				Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_tolerance);
+				if( !m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
+					m_vel.X += xDelta;
+					m_vel.Y += yDelta;
+					m_vel.Z += zDelta;
+					//m_log.Info("avoided");
+					return;
+				}
+			}
+			//m_log.Info("didn't avoid");
+			// try increaing our acceleration
+			// or try decreasing our acceleration
+			// or turn around - coz where we came from was OK
 			if (m_loc.X < 5 || m_loc.X > 250)
 				m_vel.X = -m_vel.X;
 			if (m_loc.Y < 5 || m_loc.Y > 250)

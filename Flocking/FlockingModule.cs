@@ -54,6 +54,7 @@ namespace Flocking
 		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
 		private string m_boidPrim;
+		private int m_flockSize = 100;
 		private UUID m_owner;
 
 		#region IRegionModule Members
@@ -68,6 +69,7 @@ namespace Flocking
 			if (config != null) {
 				m_chatChannel = config.GetInt ("chat-channel", 118);
 				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
+				m_flockSize = config.GetInt ("flock-size", 100);
 				
 				// we're in the config - so turn on this module
 				m_enabled = true;
@@ -96,8 +98,13 @@ namespace Flocking
 		public void RegionLoaded (Scene scene)
 		{
 			if (m_enabled) {
+				
+				//make a flow map for this scene
+				FlowMap flowMap = new FlowMap(scene );
+				flowMap.Initialise();
+				
 				// Generate initial flock values
-				m_model.Initialise (200, 255, 255, 255);
+				m_model.Initialise (m_flockSize, flowMap);
 				
 				// who is the owner for the flock in this region
 				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
@@ -153,7 +160,7 @@ namespace Flocking
 			string cmd = msg.Message.ToLower ();
 			
 			//stick ui in the args so we know to respond in world
-			//bit of a hack - but lets us us CommandDelegate inWorld
+			//bit of a hack - but lets us use CommandDelegate inWorld
 			string[] args = (cmd + " <ui>").Split (" ".ToCharArray ());
 			
 			if (cmd.StartsWith ("stop")) {
