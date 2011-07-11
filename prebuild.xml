@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
     <!-- Core osboids Project -->
 
-    <Project name="Flocking" path="addon-modules/osboids/Flocking/" type="Library">
+    <Project frameworkVersion="v3_5" name="Flocking" path="addon-modules/osboids/Flocking/" type="Library">
       <Configuration name="Debug">
         <Options>
 		<OutputPath>../../../bin/</OutputPath>
