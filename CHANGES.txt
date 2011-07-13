@@ -9,3 +9,6 @@
 	added command handlers for both console and inworld chat channel
 	added commands for setting size of flock, prim to use for boid
 	added commands to start and stop the boids flocking 
+
+13/07/2011
+	added more documentation
