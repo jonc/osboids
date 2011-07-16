@@ -33,7 +33,7 @@ namespace Flocking
 	public class FlockingModel
 	{
         private List<Boid> m_flock = new List<Boid>();
-		private FlowMap m_flowMap;
+		private FlowField m_flowField;
 		private float m_maxSpeed;
 		private float m_maxForce;
 		private float m_neighbourDistance;
@@ -63,21 +63,15 @@ namespace Flocking
 
 		void AddBoid (string name)
 		{
-			Boid boid = new Boid (name, this, m_flowMap);
+			Boid boid = new Boid (name, this, m_flowField);
 			
 			// find an initial random location for this Boid
 			// somewhere not within an obstacle
-			int xInit = m_rnd.Next(m_flowMap.LengthX);
-			int yInit = m_rnd.Next(m_flowMap.LengthY);
-			int zInit = m_rnd.Next(m_flowMap.LengthZ);
-			
-			while( m_flowMap.IsWithinObstacle( xInit, yInit, zInit ) ){
-				xInit = m_rnd.Next(m_flowMap.LengthX);
-				yInit = m_rnd.Next(m_flowMap.LengthY);
-				zInit = m_rnd.Next(m_flowMap.LengthZ);
-			}
-				
-			boid.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
+			int xInit = m_rnd.Next(Util.SCENE_SIZE);
+			int yInit = m_rnd.Next(Util.SCENE_SIZE);
+			int zInit = m_rnd.Next(Util.SCENE_SIZE);
+			Vector3 location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
+			boid.Location = location + m_flowField.AdjustVelocity(location, Vector3.UnitZ, 5f);
 			m_flock.Add (boid);
 		}
 						
@@ -102,9 +96,9 @@ namespace Flocking
 		}
 				
 
-		public void Initialise (int num, FlowMap flowMap)
+		public void Initialise (int num, FlowField flowField)
 		{
-			m_flowMap = flowMap;			
+			m_flowField = flowField;			
   			for (int i = 0; i < num; i++) {
 				AddBoid ("boid"+i );
   			}

@@ -42,7 +42,7 @@ namespace Flocking
 		private Random m_rndnums = new Random (Environment.TickCount);
 		
 		private FlockingModel m_model;
-		private FlowMap m_flowMap;
+		private FlowField m_flowField;
 
 		
 		/// <summary>
@@ -57,13 +57,13 @@ namespace Flocking
 		/// <param name='mf'>
 		/// Mf. max force / acceleration this boid can extert
 		/// </param>
-		public Boid (string id, FlockingModel model, FlowMap flowMap)
+		public Boid (string id, FlockingModel model, FlowField flowField)
 		{
 			m_id = id;
 			m_acc = Vector3.Zero;
 			m_vel = new Vector3 (m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1));
 			m_model = model;
-			m_flowMap = flowMap;
+			m_flowField = flowField;
 		}
 		
 		public Vector3 Location {
@@ -91,6 +91,7 @@ namespace Flocking
 			Flock (boids);
 
 			// our first priority is to not hurt ourselves
+			// so adjust where we would like to go to avoid hitting things
 			AvoidObstacles ();
 			
 			// then we want to avoid any threats
@@ -211,51 +212,14 @@ namespace Flocking
 
 		
 		/// <summary>
-		/// Borders this instance.
-		/// if we get too close wrap us around 
-		/// CHANGE THIS to navigate away from whatever it is we are too close to
+		/// navigate away from whatever it is we are too close to
 		/// </summary>
 		void AvoidObstacles ()
 		{
 			//look tolerance metres ahead
-			Vector3 normVel = Vector3.Normalize(m_vel);
-			Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_model.Tolerance);
-			if( m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
-				AdjustVelocityToAvoidObstacles ();
-	
-			}
+			m_acc += m_flowField.AdjustVelocity( m_loc, m_vel, m_model.Tolerance ); 
 		}
 
-		void AdjustVelocityToAvoidObstacles ()
-		{
-			for( int i = 1; i < 5; i++ ) {
-				Vector3 normVel = Vector3.Normalize(m_vel);
-				int xDelta = m_rndnums.Next (-i, i);
-				int yDelta = m_rndnums.Next (-i, i);
-				int zDelta = m_rndnums.Next (-i, i);
-				normVel.X += xDelta;
-				normVel.Y += yDelta;
-				normVel.Z += zDelta;
-				Vector3 inFront = m_loc + Vector3.Multiply(normVel, m_model.Tolerance);
-				if( !m_flowMap.WouldHitObstacle( m_loc, inFront ) ) {
-					m_vel.X += xDelta;
-					m_vel.Y += yDelta;
-					m_vel.Z += zDelta;
-					//m_log.Info("avoided");
-					return;
-				}
-			}
-			//m_log.Info("didn't avoid");
-			// try increaing our acceleration
-			// or try decreasing our acceleration
-			// or turn around - coz where we came from was OK
-			if (m_loc.X < 5 || m_loc.X > 250)
-				m_vel.X = -m_vel.X;
-			if (m_loc.Y < 5 || m_loc.Y > 250)
-				m_vel.Y = -m_vel.Y;
-			if (m_loc.Z < 21 || m_loc.Z > 271 )
-				m_vel.Z = -m_vel.Z;
-		}
 		
 		/// <summary>
 		/// Separate ourselves from the specified boids.

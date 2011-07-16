@@ -20,6 +20,8 @@
 				  <include name="FlockingModel.cs" />
 				  <include name="FlockingModule.cs" />
 				  <include name="FlockingView.cs" />
+				  <include name="FlowField.cs" />
+				  <include name="FlowFieldTest.cs" />
 				  <include name="FlowMap.cs" />
 				  <include name="Util.cs" />
 			  </sources>
@@ -30,12 +32,14 @@
 				  </lib>
                 <include name="../../../bin/log4net.dll"/>
                 <include name="../../../bin/Nini.dll"/>
+                <include name="../../../bin/nunit.framework.dll"/>
                 <include name="../../../bin/OpenMetaverse.dll"/>
                 <include name="../../../bin/OpenMetaverseTypes.dll"/>
                 <include name="../../../bin/OpenSim.Framework.dll"/>
                 <include name="../../../bin/OpenSim.Framework.Communications.dll"/>
                 <include name="../../../bin/OpenSim.Framework.Console.dll"/>
                 <include name="../../../bin/OpenSim.Region.Framework.dll"/>
+                <include name="../../../bin/OpenSim.Tests.Common.dll"/>
                 <include name="System.dll" />
                 <include name="System.Drawing.dll" />
                 <include name="System.Xml.dll" />

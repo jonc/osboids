@@ -90,7 +90,7 @@ namespace Flocking
 
 		public void AddRegion (Scene scene)
 		{
-			m_log.Info ("ADDING FLOCKING");
+			//m_log.Info ("ADDING FLOCKING");
 			m_scene = scene;
 			if (m_enabled) {
 				//register commands
@@ -112,11 +112,14 @@ namespace Flocking
 			if (m_enabled) {
 				
 				//make a flow map for this scene
-				FlowMap flowMap = new FlowMap(scene );
-				flowMap.Initialise();
+				//FlowMap flowMap = new FlowMap(scene );
+				//flowMap.Initialise();
+				
+				//build a proper flow field based on the scene
+				FlowField field = new FlowField(scene, new Vector3(128f, 128f, 128f), 200, 200, 200);
 				
 				// Generate initial flock values
-				m_model.Initialise (m_flockSize, flowMap);
+				m_model.Initialise (m_flockSize, field);
 				
 				// who is the owner for the flock in this region
 				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
@@ -282,7 +285,8 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				bool inWorld = IsInWorldCmd (ref args);
-				ShowResponse ("Num Boids = " + m_model.Size, inWorld);
+				string str = "Num Boids = " + m_model.Size;
+				ShowResponse (str, inWorld);
 			}
 		}
 		

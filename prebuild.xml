@@ -19,7 +19,9 @@
       <Reference name="System.Drawing" />
       <Reference name="System.Xml"/>
       <Reference name="Nini"  path="../../../bin/" />
+      <Reference name="nunit.framework"  path="../../../bin/" />
       <Reference name="OpenSim.Framework"  path="../../../bin/" />
+      <Reference name="OpenSim.Tests.Common"  path="../../../bin/" />
       <Reference name="OpenSim.Framework.Communications" path="../../../bin/" />
       <Reference name="OpenSim.Region.Framework" path="../../../bin/" />
       <Reference name="OpenSim.Framework.Console"  path="../../../bin/" />

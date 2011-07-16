@@ -29,8 +29,11 @@ using OpenMetaverse;
 
 namespace Flocking
 {
+	
 	public class Util
 	{
+		public const int SCENE_SIZE = 256;
+		
 		public static Vector3 Limit (Vector3 initial, float maxLen)
 		{
 			float currLen = initial.Length ();
