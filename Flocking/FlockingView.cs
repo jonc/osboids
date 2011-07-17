@@ -57,24 +57,23 @@ namespace Flocking
 		public void Clear ()
 		{
             //trash everything we have
-            foreach (string name in m_sogMap.Keys)
-            {
-                RemoveSOGFromScene(name);
-            }
+			List<string> current = new List<string> (m_sogMap.Keys);
+            current.ForEach (delegate(string name) {
+                 RemoveSOGFromScene(name);
+            });
             m_sogMap.Clear();
  		}
 
 		public void Render (List<Boid> boids)
 		{
-			foreach (Boid boid in boids) {
-				DrawBoid (boid);
-			}
+			boids.ForEach(delegate( Boid boid ) {
+					DrawBoid (boid);
+			});
 		}
 		
 		private void DrawBoid (Boid boid)
 		{
 			SceneObjectPart existing = m_scene.GetSceneObjectPart (boid.Id);
-
 
 			SceneObjectGroup sog;
 			if (existing == null) {
@@ -86,20 +85,24 @@ namespace Flocking
 				sog = existing.ParentGroup;
 			}
 			
-			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, boid.Location);
+			Quaternion rotation = CalcRotationToEndpoint (sog, boid.Location);
 			sog.UpdateGroupRotationPR( boid.Location, rotation);
 		}
 		
-		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)
+		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup sog, Vector3 ev)
 		{
 			//llSetRot(llRotBetween(<1,0,0>,llVecNorm(targetPosition - llGetPos())));
 			// boid wil fly x forwards and Z up
+			Vector3 sv = sog.AbsolutePosition;
 			
 			Vector3 currDirVec = Vector3.UnitX;
 			Vector3 desiredDirVec = Vector3.Subtract (ev, sv);
 			desiredDirVec.Normalize ();
 
 			Quaternion rot = Vector3.RotationBetween (currDirVec, desiredDirVec);
+			
+			//TODO: if we turn upside down, flip us over by rotating along Y
+			
 			return rot;
 		}
 		
@@ -113,13 +116,9 @@ namespace Flocking
 		
 		private SceneObjectGroup findByName (string name)
 		{
-			SceneObjectGroup retVal = null;
-			foreach (EntityBase e in m_scene.GetEntities()) {
-				if (e.Name == name) {
-					retVal = (SceneObjectGroup)e;
-					break;
-				}
-			}
+			SceneObjectGroup retVal = (SceneObjectGroup)m_scene.Entities.Find (delegate( EntityBase e ) {
+				return (e.Name == name) && (e is  SceneObjectGroup);
+			});
 			
 			// can't find it so make a default one
 			if (retVal == null) {

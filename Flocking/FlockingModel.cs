@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using OpenMetaverse;
+using Utils = OpenSim.Framework.Util;
 
 namespace Flocking
 {
@@ -39,6 +40,11 @@ namespace Flocking
 		private float m_neighbourDistance;
 		private float m_desiredSeparation;
 		private float m_tolerance;
+		private float m_separationWeighting = 1.5f;
+		private float m_alignmentWeighting = 1f;
+		private float m_cohesionWeighting = 1f;
+		private float m_lookaheadDistance = 100f;
+
 		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
@@ -95,6 +101,26 @@ namespace Flocking
 			get {return m_tolerance;}
 		}
 				
+		public float SeparationWeighting {
+			get{ return m_separationWeighting; }
+			set{ m_separationWeighting = value;}
+		}
+		
+		public float AlignmentWeighting {
+			get{ return m_alignmentWeighting; }
+			set{ m_alignmentWeighting = value;}
+		}
+		
+		public float CohesionWeighting {
+			get{ return m_cohesionWeighting; }
+			set{ m_cohesionWeighting = value;}
+		}
+		
+		public float LookaheadDistance {
+			get { return m_lookaheadDistance; }
+			set { m_lookaheadDistance = value;}
+		}
+		
 
 		public void Initialise (int num, FlowField flowField)
 		{
@@ -103,12 +129,19 @@ namespace Flocking
 				AddBoid ("boid"+i );
   			}
 		}
+		
+		public List<Boid> GetNeighbours(Boid boid) {
+			return m_flock.FindAll(delegate(Boid other) {
+				return (boid != other) && (Utils.GetDistanceTo (boid.Location, other.Location) < m_neighbourDistance);
+			});
+		}
+
 
 		public List<Boid> UpdateFlockPos ()
 		{
-    		foreach (Boid b in m_flock) {
-      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of boids to each boid individually
-    		}
+			m_flock.ForEach( delegate(Boid boid) {
+				boid.MoveInSceneRelativeToFlock();	
+			} );
 			
 			return m_flock;
 		}

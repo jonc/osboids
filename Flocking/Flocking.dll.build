@@ -24,6 +24,7 @@
 				  <include name="FlowFieldTest.cs" />
 				  <include name="FlowMap.cs" />
 				  <include name="Util.cs" />
+				  <include name="VectorTest.cs" />
 			  </sources>
 			  <references basedir="${project::get-base-directory()}">
 				  <lib>

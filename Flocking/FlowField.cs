@@ -64,11 +64,9 @@ namespace Flocking
 				for( int x = 0; x < size.X; x++ ) {
 					for( int y = 0; y < size.Y; y++ ) {
 						for( int z = 0; z < size.Z; z++ ) {
-							if( IsWithinFlowField( 
 						}
 					}
 				}
-					
 			}
 		}
 

@@ -60,6 +60,11 @@ namespace Flocking
 		private float m_neighbourDistance;
 		private float m_desiredSeparation;
 		private float m_tolerance;
+		private float m_separationWeighting = 1.5f;
+		private float m_alignmentWeighting = 1f;
+		private float m_cohesionWeighting = 1f;
+		private float m_lookaheadDistance = 100f;
+		private ChatCommandParser m_chatCommandParser;
 
 		private UUID m_owner;
 
@@ -81,6 +86,10 @@ namespace Flocking
 				m_neighbourDistance = config.GetFloat("neighbour-dist", 25f);
 				m_desiredSeparation = config.GetFloat("desired-separation", 20f);
 				m_tolerance = config.GetFloat("tolerance", 5f);
+				m_separationWeighting = config.GetFloat("separation-weighting", 1.5f);
+				m_alignmentWeighting = config.GetFloat("alignment-weighting", 1f);
+				m_cohesionWeighting = config.GetFloat("cohesion-weighting", 1f);
+				m_lookaheadDistance = config.GetFloat("lookahead-dist",100f);
 				
 				
 				// we're in the config - so turn on this module
@@ -94,26 +103,32 @@ namespace Flocking
 			m_scene = scene;
 			if (m_enabled) {
 				//register commands
+				m_chatCommandParser = new ChatCommandParser(this, scene, m_chatChannel);
 				RegisterCommands ();
 				
 				//register handlers
 				m_scene.EventManager.OnFrame += FlockUpdate;
-				m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
+				m_scene.EventManager.OnChatFromClient += m_chatCommandParser.SimChatSent; //listen for commands sent from the client
 
 				// init module
 				m_model = new FlockingModel (m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance);
+				m_model.SeparationWeighting = m_separationWeighting;
+				m_model.AlignmentWeighting = m_alignmentWeighting;
+				m_model.CohesionWeighting = m_cohesionWeighting;
+				m_model.LookaheadDistance = m_lookaheadDistance;
 				m_view = new FlockingView (m_scene);
 				m_view.BoidPrim = m_boidPrim;
 			}
 		}
 
+		void chatCom (object sender, OSChatMessage chat)
+		{
+			
+		}
+
 		public void RegionLoaded (Scene scene)
 		{
 			if (m_enabled) {
-				
-				//make a flow map for this scene
-				//FlowMap flowMap = new FlowMap(scene );
-				//flowMap.Initialise();
 				
 				//build a proper flow field based on the scene
 				FlowField field = new FlowField(scene, new Vector3(128f, 128f, 128f), 200, 200, 200);
@@ -134,7 +149,7 @@ namespace Flocking
 		{
 			if (m_enabled) {
 				m_scene.EventManager.OnFrame -= FlockUpdate;
-				m_scene.EventManager.OnChatFromClient -= SimChatSent;
+				m_scene.EventManager.OnChatFromClient -= m_chatCommandParser.SimChatSent;
 			}
 		}
 
@@ -155,9 +170,6 @@ namespace Flocking
 			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || !m_enabled) {
 				return;
 			}
-			
-			//m_log.InfoFormat("update my boids");
-			
 			// work out where everyone has moved to
 			// and tell the scene to render the new positions
 			lock( m_sync ) {
@@ -166,34 +178,6 @@ namespace Flocking
 			}
 		}
 		
-		protected void SimChatSent (Object x, OSChatMessage msg)
-		{
-			if (m_scene.ConsoleScene () != m_scene || msg.Channel != m_chatChannel)
-				return; // not for us
-
-			// try and parse a valid cmd from this msg
-			string cmd = msg.Message.ToLower ();
-			
-			//stick ui in the args so we know to respond in world
-			//bit of a hack - but lets us use CommandDelegate inWorld
-			string[] args = (cmd + " <ui>").Split (" ".ToCharArray ());
-			
-			if (cmd.StartsWith ("stop")) {
-				HandleStopCmd ("flock", args);
-			} else if (cmd.StartsWith ("start")) {
-				HandleStartCmd ("flock", args);
-			} else if (cmd.StartsWith ("size")) {
-				HandleSetSizeCmd ("flock", args);
-			} else if (cmd.StartsWith ("stats")) {
-				HandleShowStatsCmd ("flock", args);
-			} else if (cmd.StartsWith ("prim")) {
-				HandleSetPrimCmd ("flock", args);
-			} else if (cmd.StartsWith ("framerate")) {
-				HandleSetFrameRateCmd ("flock", args);
-			}
-			
-		}
-
 		#endregion
 		
 		#region Command Handling
@@ -205,6 +189,7 @@ namespace Flocking
 				argStr = " <" + args + "> ";
 			}
 			m_scene.AddCommand (this, "flock-" + cmd, "flock-" + cmd + argStr, help, fn);
+			m_chatCommandParser.AddCommand(cmd, args, help, fn);
 		}
 
 		private void RegisterCommands ()
@@ -215,6 +200,7 @@ namespace Flocking
 			AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
 			AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
 			AddCommand ("framerate", "num", "[debugging] only update boids every <num> frames", HandleSetFrameRateCmd);
+			AddCommand ("set", "name, value", "change the flock dynamics", HandleSetParameterCmd);
 		}
 		
 		private bool ShouldHandleCmd ()
@@ -235,12 +221,16 @@ namespace Flocking
 		private void ShowResponse (string response, bool inWorld)
 		{
 			if (inWorld) {
-				IClientAPI ownerAPI = null;
-				if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
-					ownerAPI.SendBlueBoxMessage (m_owner, "osboids", response);
-				}
+					ScenePresence owner = m_scene.GetScenePresence(m_owner);
+					m_chatCommandParser.SendMessage(owner, response);
 			} else {
 				MainConsole.Instance.Output (response);
+			}
+		}
+		
+		public void HandleSetParameterCmd(string module, string[] args)
+		{
+			if (ShouldHandleCmd ()) {
 			}
 		}
 		
