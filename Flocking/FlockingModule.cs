@@ -54,17 +54,8 @@ namespace Flocking
 		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
 		private string m_boidPrim;
-		private int m_flockSize = 100;
-		private float m_maxSpeed;
-		private float m_maxForce;
-		private float m_neighbourDistance;
-		private float m_desiredSeparation;
-		private float m_tolerance;
-		private float m_separationWeighting = 1.5f;
-		private float m_alignmentWeighting = 1f;
-		private float m_cohesionWeighting = 1f;
-		private float m_lookaheadDistance = 100f;
 		private ChatCommandParser m_chatCommandParser;
+		private FlockParameters m_parameters;
 
 		private UUID m_owner;
 
@@ -80,18 +71,19 @@ namespace Flocking
 			if (config != null) {
 				m_chatChannel = config.GetInt ("chat-channel", 118);
 				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
-				m_flockSize = config.GetInt ("flock-size", 100);
-				m_maxSpeed = config.GetFloat("max-speed", 3f);
-				m_maxForce = config.GetFloat("max-force", 0.25f);
-				m_neighbourDistance = config.GetFloat("neighbour-dist", 25f);
-				m_desiredSeparation = config.GetFloat("desired-separation", 20f);
-				m_tolerance = config.GetFloat("tolerance", 5f);
-				m_separationWeighting = config.GetFloat("separation-weighting", 1.5f);
-				m_alignmentWeighting = config.GetFloat("alignment-weighting", 1f);
-				m_cohesionWeighting = config.GetFloat("cohesion-weighting", 1f);
-				m_lookaheadDistance = config.GetFloat("lookahead-dist",100f);
 				
-				
+				m_parameters = new FlockParameters();
+				m_parameters.flockSize = config.GetInt ("flock-size", 100);
+				m_parameters.maxSpeed = config.GetFloat("max-speed", 3f);
+				m_parameters.maxForce = config.GetFloat("max-force", 0.25f);
+				m_parameters.neighbourDistance = config.GetFloat("neighbour-dist", 25f);
+				m_parameters.desiredSeparation = config.GetFloat("desired-separation", 20f);
+				m_parameters.tolerance = config.GetFloat("tolerance", 5f);
+				m_parameters.separationWeighting = config.GetFloat("separation-weighting", 1.5f);
+				m_parameters.alignmentWeighting = config.GetFloat("alignment-weighting", 1f);
+				m_parameters.cohesionWeighting = config.GetFloat("cohesion-weighting", 1f);
+				m_parameters.lookaheadDistance = config.GetFloat("lookahead-dist", 100f);
+
 				// we're in the config - so turn on this module
 				m_enabled = true;
 			}
@@ -111,11 +103,8 @@ namespace Flocking
 				m_scene.EventManager.OnChatFromClient += m_chatCommandParser.SimChatSent; //listen for commands sent from the client
 
 				// init module
-				m_model = new FlockingModel (m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance);
-				m_model.SeparationWeighting = m_separationWeighting;
-				m_model.AlignmentWeighting = m_alignmentWeighting;
-				m_model.CohesionWeighting = m_cohesionWeighting;
-				m_model.LookaheadDistance = m_lookaheadDistance;
+				m_model = new FlockingModel (m_parameters);
+				
 				m_view = new FlockingView (m_scene);
 				m_view.BoidPrim = m_boidPrim;
 			}
@@ -134,7 +123,7 @@ namespace Flocking
 				FlowField field = new FlowField(scene, new Vector3(128f, 128f, 128f), 200, 200, 200);
 				
 				// Generate initial flock values
-				m_model.Initialise (m_flockSize, field);
+				m_model.Initialise (field);
 				
 				// who is the owner for the flock in this region
 				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;

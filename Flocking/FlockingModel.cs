@@ -35,17 +35,7 @@ namespace Flocking
 	{
         private List<Boid> m_flock = new List<Boid>();
 		private FlowField m_flowField;
-		private float m_maxSpeed;
-		private float m_maxForce;
-		private float m_neighbourDistance;
-		private float m_desiredSeparation;
-		private float m_tolerance;
-		private float m_separationWeighting = 1.5f;
-		private float m_alignmentWeighting = 1f;
-		private float m_cohesionWeighting = 1f;
-		private float m_lookaheadDistance = 100f;
-
-		
+		private FlockParameters m_parameters;		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
 		public int Size {
@@ -59,12 +49,8 @@ namespace Flocking
 			}
 		}
 		
-		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance ) {
-			m_maxSpeed = maxSpeed;
-			m_maxForce = maxForce;
-			m_neighbourDistance = neighbourDistance;
-			m_desiredSeparation = desiredSeparation;
-			m_tolerance = tolerance;
+		public FlockingModel( FlockParameters parameters ) {
+			m_parameters = parameters;
 		}
 
 		void AddBoid (string name)
@@ -82,57 +68,58 @@ namespace Flocking
 		}
 						
 		public float MaxSpeed {
-			get {return m_maxSpeed;}
+			get {return m_parameters.maxSpeed;}
 		}
 				
 		public float MaxForce {
-			get {return m_maxForce;}
+			get {return m_parameters.maxForce;}
 		}
 
 		public float NeighbourDistance {
-			get {return m_neighbourDistance;}
+			get {return m_parameters.neighbourDistance;}
 		}
 				
 		public float DesiredSeparation {
-			get {return m_desiredSeparation;}
+			get {return m_parameters.desiredSeparation;}
 		}
 				
 		public float Tolerance {
-			get {return m_tolerance;}
+			get {return m_parameters.tolerance;}
 		}
 				
 		public float SeparationWeighting {
-			get{ return m_separationWeighting; }
-			set{ m_separationWeighting = value;}
+			get{ return m_parameters.separationWeighting; }
+			set{ m_parameters.separationWeighting = value;}
 		}
 		
 		public float AlignmentWeighting {
-			get{ return m_alignmentWeighting; }
-			set{ m_alignmentWeighting = value;}
+			get{ return m_parameters.alignmentWeighting; }
+			set{ m_parameters.alignmentWeighting = value;}
 		}
 		
 		public float CohesionWeighting {
-			get{ return m_cohesionWeighting; }
-			set{ m_cohesionWeighting = value;}
+			get{ return m_parameters.cohesionWeighting; }
+			set{ m_parameters.cohesionWeighting = value;}
 		}
 		
 		public float LookaheadDistance {
-			get { return m_lookaheadDistance; }
-			set { m_lookaheadDistance = value;}
+			get { return m_parameters.lookaheadDistance; }
+			set { m_parameters.lookaheadDistance = value;}
 		}
 		
 
-		public void Initialise (int num, FlowField flowField)
+		public void Initialise (FlowField flowField)
 		{
 			m_flowField = flowField;			
-  			for (int i = 0; i < num; i++) {
+  			for (int i = 0; i < m_parameters.flockSize; i++) {
 				AddBoid ("boid"+i );
   			}
 		}
 		
 		public List<Boid> GetNeighbours(Boid boid) {
-			return m_flock.FindAll(delegate(Boid other) {
-				return (boid != other) && (Utils.GetDistanceTo (boid.Location, other.Location) < m_neighbourDistance);
+			return m_flock.FindAll(delegate(Boid other) 
+			{
+				return (boid != other) && (Utils.GetDistanceTo (boid.Location, other.Location) < m_parameters.neighbourDistance);
 			});
 		}
 
