@@ -56,6 +56,7 @@ namespace Flocking
 		private string m_boidPrim;
 		private ChatCommandParser m_chatCommandParser;
 		private FlockParameters m_parameters;
+		private int m_flockSize = 100;
 
 		private UUID m_owner;
 
@@ -73,7 +74,7 @@ namespace Flocking
 				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
 				
 				m_parameters = new FlockParameters();
-				m_parameters.flockSize = config.GetInt ("flock-size", 100);
+				m_flockSize = config.GetInt ("flock-size", 100);
 				m_parameters.maxSpeed = config.GetFloat("max-speed", 3f);
 				m_parameters.maxForce = config.GetFloat("max-force", 0.25f);
 				m_parameters.neighbourDistance = config.GetFloat("neighbour-dist", 25f);
@@ -110,11 +111,6 @@ namespace Flocking
 			}
 		}
 
-		void chatCom (object sender, OSChatMessage chat)
-		{
-			
-		}
-
 		public void RegionLoaded (Scene scene)
 		{
 			if (m_enabled) {
@@ -123,7 +119,7 @@ namespace Flocking
 				FlowField field = new FlowField(scene, new Vector3(128f, 128f, 128f), 200, 200, 200);
 				
 				// Generate initial flock values
-				m_model.Initialise (field);
+				m_model.Initialise (m_flockSize, field);
 				
 				// who is the owner for the flock in this region
 				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
@@ -220,6 +216,16 @@ namespace Flocking
 		public void HandleSetParameterCmd(string module, string[] args)
 		{
 			if (ShouldHandleCmd ()) {
+				string name = args[1];
+				string newVal = args[2];
+				
+				if( m_parameters.IsValidParameter( name ) ) {
+					m_parameters.SetParameter(name, newVal);
+				} else {
+					bool inWorld = IsInWorldCmd( ref args);
+					ShowResponse( name + "is not a valid flock parameter", inWorld );
+					ShowResponse( "valid parameters are: " + m_parameters.GetList(), inWorld);
+				}
 			}
 		}
 		

@@ -25,7 +25,7 @@ namespace Flocking
 			m_name = name;
 			
 			if (args.Trim ().Length > 0) {
-				NumParams = args.Split (", ".ToCharArray ()).Length;
+				NumParams = args.Split (",".ToCharArray ()).Length;
 			} else {
 				NumParams = 0;
 			}

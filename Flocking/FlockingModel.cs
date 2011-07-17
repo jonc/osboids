@@ -37,9 +37,10 @@ namespace Flocking
 		private FlowField m_flowField;
 		private FlockParameters m_parameters;		
 		private Random m_rnd = new Random(Environment.TickCount);
+		private int m_size;
 		
 		public int Size {
-			get {return m_flock.Count;}
+			get {return m_size;}
 			set {
 				if( value < m_flock.Count ) {
 					m_flock.RemoveRange( 0, m_flock.Count - value );
@@ -89,29 +90,26 @@ namespace Flocking
 				
 		public float SeparationWeighting {
 			get{ return m_parameters.separationWeighting; }
-			set{ m_parameters.separationWeighting = value;}
 		}
 		
 		public float AlignmentWeighting {
 			get{ return m_parameters.alignmentWeighting; }
-			set{ m_parameters.alignmentWeighting = value;}
 		}
 		
 		public float CohesionWeighting {
 			get{ return m_parameters.cohesionWeighting; }
-			set{ m_parameters.cohesionWeighting = value;}
 		}
 		
 		public float LookaheadDistance {
 			get { return m_parameters.lookaheadDistance; }
-			set { m_parameters.lookaheadDistance = value;}
 		}
 		
 
-		public void Initialise (FlowField flowField)
+		public void Initialise (int size, FlowField flowField)
 		{
-			m_flowField = flowField;			
-  			for (int i = 0; i < m_parameters.flockSize; i++) {
+			m_flowField = flowField;
+			m_size = size;
+  			for (int i = 0; i < m_size; i++) {
 				AddBoid ("boid"+i );
   			}
 		}
