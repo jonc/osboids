@@ -1,4 +1,0 @@
-The following people have contributed to the development of the osboids module
-
-* Jon Cundill - initial implementation
-
