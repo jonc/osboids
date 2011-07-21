@@ -1,0 +1,28 @@
+
+
+TODO:
+
+[done] Expose Settings to ini Files
+
+[done] Write in world Chat controller to allow maintenance of flocking in world.
+
+[done - but basic] Handle Borders Correctly
+
+[done - but basic] Handle Collision Avoidance
+
+Replace above with a proper flow field implementation
+
+Handle Wander
+
+Handle Perching
+
+Handle Predator Avoidance
+
+
+Optimise it all...
+
+Look at maintaining flocks across sim boundaries.
+
+Look at exposing flocking as a service to scripts 
+
+
