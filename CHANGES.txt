@@ -12,3 +12,10 @@
 
 13/07/2011
 	added more documentation
+
+21/07/2011
+	introduced branch based on stable 0.7.1.1 opensim code. This currently ahead of master
+	added ability to change the flocking parameters at runtime through set commands
+	improved the collision algorithms somewhat
+	added orientation flock step that attempts to limit excessive vertical velocity vectors
+
