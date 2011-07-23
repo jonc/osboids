@@ -19,3 +19,11 @@
 	improved the collision algorithms somewhat
 	added orientation flock step that attempts to limit excessive vertical velocity vectors
 
+23/07/2011
+	added ability to script boid behaviour from lsl
+	tidied up copyright notices
+	further flow field work - still flying into objects, so still work to do here
+	flocking simulation now doesn't start until invoked by start command
+	flow field now recalculated on each start - so can edit scene and restart takes this into account
+
+	
