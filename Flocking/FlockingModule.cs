@@ -36,6 +36,8 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
+using OpenSim.Services.Interfaces;
+
 
 namespace Flocking
 {
@@ -49,12 +51,12 @@ namespace Flocking
 		private FlockingModel m_model;
 		private FlockingView m_view;
 		private bool m_enabled = false;
-		private bool m_ready = false;
+		private bool m_active = false;
 		private uint m_frame = 0;
 		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
-		private string m_boidPrim;
-		private ChatCommandParser m_chatCommandParser;
+		private string m_boidPrim = "boid-prim";
+		private FlockingCommandParser m_commandParser;
 		private BoidBehaviour m_behaviour;
 		private int m_flockSize = 100;
 
@@ -95,50 +97,34 @@ namespace Flocking
 			//m_log.Info ("ADDING FLOCKING");
 			m_scene = scene;
 			if (m_enabled) {
-				//register commands
-				m_chatCommandParser = new ChatCommandParser(this, scene, m_chatChannel);
-				RegisterCommands ();
 				
 				//register handlers
 				m_scene.EventManager.OnFrame += FlockUpdate;
-				m_scene.EventManager.OnChatFromClient += m_chatCommandParser.SimChatSent; //listen for commands sent from the client
-
-				// init module
-				m_model = new FlockingModel (m_behaviour);
-				
-				m_view = new FlockingView (m_scene);
-				m_view.BoidPrim = m_boidPrim;
 			}
 		}
 
 		public void RegionLoaded (Scene scene)
 		{
 			if (m_enabled) {
-				
-				//build a proper flow field based on the scene
-				FlowField field = new FlowField(scene, new Vector3(128f, 128f, 128f), 200, 200, 200);
-				
-				//ask the view how big the boid is
-				Vector3 scale = m_view.GetBoidSize();
-//				m_log.Error( m_boidPrim + " = " + scale.ToString());
-				
-				// Generate initial flock values
-				m_model.Initialise (m_flockSize, scale, field);
-				
 				// who is the owner for the flock in this region
-				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
+				m_owner = scene.RegionInfo.EstateSettings.EstateOwner;
+				
+				//register command handler
+				m_commandParser = new FlockingCommandParser(this, scene, m_chatChannel);
+				RegisterCommands ();
+				
+				// init view
+				m_view = new FlockingView (scene);
 				m_view.PostInitialize (m_owner);
-
-				// Mark Module Ready for duty
-				m_ready = true;
+				m_view.BoidPrim = m_boidPrim;
 			}
 		}
-
+		
 		public void RemoveRegion (Scene scene)
 		{
 			if (m_enabled) {
 				m_scene.EventManager.OnFrame -= FlockUpdate;
-				m_scene.EventManager.OnChatFromClient -= m_chatCommandParser.SimChatSent;
+				m_commandParser.Deregister();
 			}
 		}
 
@@ -156,7 +142,7 @@ namespace Flocking
 		
 		public void FlockUpdate ()
 		{
-			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || !m_enabled) {
+			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_active || !m_enabled) {
 				return;
 			}
 			// work out where everyone has moved to
@@ -169,52 +155,42 @@ namespace Flocking
 		
 		#endregion
 		
+		
+		private void BuildFlowField(Vector3 centre, int width, int depth, int height) {
+			m_log.Info("building flow field");
+			//build a flow field based on the scene
+			FlowField field = new FlowField(m_scene, centre, width, depth, height);
+			m_log.Info("built");
+			//ask the view how big the boid prim is
+			Vector3 scale = m_view.GetBoidSize();
+				
+			Vector3 startPos = m_scene.GetSceneObjectPart(m_view.BoidPrim).ParentGroup.AbsolutePosition;
+			// init model
+			m_log.Info("creating model");
+			m_model = new FlockingModel (m_behaviour, startPos );
+			// Generate initial flock values
+			m_model.Initialise (m_flockSize, scale, field);
+			m_log.Info("done");
+
+		}
+		
 		#region Command Handling
 		
-		private void AddCommand (string cmd, string args, string help, CommandDelegate fn)
-		{
-			string argStr = "";
-			if (args.Trim ().Length > 0) {
-				argStr = " <" + args + "> ";
-			}
-			m_scene.AddCommand (this, "flock-" + cmd, "flock-" + cmd + argStr, help, fn);
-			m_chatCommandParser.AddCommand(cmd, args, help, fn);
-		}
 
 		private void RegisterCommands ()
 		{
-			AddCommand ("stop", "", "Stop all Flocking", HandleStopCmd);
-			AddCommand ("start", "", "Start Flocking", HandleStartCmd);
-			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
-			AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
-			AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
-			AddCommand ("framerate", "num", "[debugging] only update boids every <num> frames", HandleSetFrameRateCmd);
-			AddCommand ("set", "name, value", "change the flock dynamics", HandleSetParameterCmd);
+			m_commandParser.AddCommand ("stop", "", "Stop all Flocking", HandleStopCmd);
+			m_commandParser.AddCommand ("start", "", "Start Flocking", HandleStartCmd);
+			m_commandParser.AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
+			m_commandParser.AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
+			m_commandParser.AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
+			m_commandParser.AddCommand ("framerate", "num", "[debugging] only update boids every <num> frames", HandleSetFrameRateCmd);
+			m_commandParser.AddCommand ("set", "name, value", "change the flock behaviour properties", HandleSetParameterCmd);
 		}
 		
 		private bool ShouldHandleCmd ()
 		{
 			return m_scene.ConsoleScene () == m_scene;
-		}
-		
-		private bool IsInWorldCmd (ref string [] args)
-		{
-			bool retVal = false;
-			
-			if (args.Length > 0 && args [args.Length - 1].Equals ("<ui>")) {
-				retVal = true;	
-			}
-			return retVal;
-		}
-		
-		private void ShowResponse (string response, bool inWorld)
-		{
-			if (inWorld) {
-					ScenePresence owner = m_scene.GetScenePresence(m_owner);
-					m_chatCommandParser.SendMessage(owner, response);
-			} else {
-				MainConsole.Instance.Output (response);
-			}
 		}
 		
 		public void HandleSetParameterCmd(string module, string[] args)
@@ -226,9 +202,8 @@ namespace Flocking
 				if( m_behaviour.IsValidParameter( name ) ) {
 					m_behaviour.SetParameter(name, newVal);
 				} else {
-					bool inWorld = IsInWorldCmd( ref args);
-					ShowResponse( name + "is not a valid flock parameter", inWorld );
-					ShowResponse( "valid parameters are: " + m_behaviour.GetList(), inWorld);
+					m_commandParser.ShowResponse( name + "is not a valid flock parameter", args );
+					m_commandParser.ShowResponse( "valid parameters are: " + m_behaviour.GetList(), args);
 				}
 			}
 		}
@@ -237,7 +212,7 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				m_log.Info ("stop the flocking capability");
-				m_enabled = false;
+				m_active = false;
 				m_view.Clear ();
 			}
 		}
@@ -254,7 +229,8 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				m_log.Info ("start the flocking capability");
-				m_enabled = true;
+				BuildFlowField(new Vector3(128f, 128f, 128f), 200, 200, 200);
+				m_active = true;
 				FlockUpdate ();
 			}
 		}
@@ -273,9 +249,8 @@ namespace Flocking
 		public void HandleShowStatsCmd (string module, string[] args)
 		{
 			if (ShouldHandleCmd ()) {
-				bool inWorld = IsInWorldCmd (ref args);
 				string str = m_model.ToString();
-				ShowResponse (str, inWorld);
+				m_commandParser.ShowResponse (str, args);
 			}
 		}
 		

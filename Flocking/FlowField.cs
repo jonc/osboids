@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * See CONTRIBUTORS.TXT for a full list of copyright holders.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the OpenSimulator Project nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 using System;
 using OpenMetaverse;
 using OpenSim.Region.Framework.Scenes;
@@ -16,7 +42,7 @@ namespace Flocking
 		private float m_endZ;
 		private UUID TERRAIN = UUID.Random ();
 		private UUID EDGE = UUID.Random ();
-		private UUID[,,] m_field = new UUID[256, 256, 256]; // field of the object at this position
+		private UUID[,,] m_field = new UUID[256, 256, 256]; // field of objects at this position
 		
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Flocking.FlowField"/> class.
@@ -93,95 +119,119 @@ namespace Flocking
 				float fmaxX, fminX, fmaxY, fminY, fmaxZ, fminZ;
 				int maxX, minX, maxY, minY, maxZ, minZ;
 				sog.GetAxisAlignedBoundingBoxRaw (out fminX, out fmaxX, out fminY, out fmaxY, out fminZ, out fmaxZ);
+				Vector3 pos = sog.AbsolutePosition;
 					
-				minX = Convert.ToInt32 (fminX);
-				maxX = Convert.ToInt32 (fmaxX);
-				minY = Convert.ToInt32 (fminY);
-				maxY = Convert.ToInt32 (fmaxX);
-				minZ = Convert.ToInt32 (fminZ);
-				maxZ = Convert.ToInt32 (fmaxZ);
+				minX = Convert.ToInt32 (fminX + pos.X);
+				maxX = Convert.ToInt32 (fmaxX + pos.X);
+				minY = Convert.ToInt32 (fminY + pos.Y);
+				maxY = Convert.ToInt32 (fmaxX + pos.Y);
+				minZ = Convert.ToInt32 (fminZ + pos.Z);
+				maxZ = Convert.ToInt32 (fmaxZ + pos.Z);
 					
 				for (int x = minX; x < maxX; x++) {
 					for (int y = minY; y < maxY; y++) {
 						for (int z = minZ; z < maxZ; z++) {
-							m_field [x, y, z] = sog.UUID;
+							if( inBounds(x,y,z) ) {
+								m_field [x, y, z] = sog.UUID;
+							} else {
+								Console.WriteLine(sog.Name + " OOB at " + sog.AbsolutePosition + " -> " + x + " " + y + " " + z);
+							}
 						}
 					}
 				}
 			}
 		}
+
+		private bool inBounds (int x, int y, int z)
+		{
+			return x >= 0 && x < 256 && y >= 0 && y < 256 && z >= 0;
+		}
 		
+#if false
 		public Vector3 AdjustVelocity (Boid boid, float lookAheadDist)
 		{
 			Vector3 normVel = Vector3.Normalize (boid.Velocity);
 			Vector3 loc = boid.Location;			
 			Vector3 inFront = loc + normVel * lookAheadDist;
 			
-			Vector3 adjustedDestintation = inFront + FieldStrength (loc, boid.Size, inFront);
+			Vector3 adjustedDestintation = FieldStrength (loc, boid.Size, inFront);
 			Vector3 newVel = Vector3.Normalize (adjustedDestintation - loc) * Vector3.Mag (boid.Velocity);
+			
+			float mOrigVel = Vector3.Mag(boid.Velocity);
+			float mNewVel = Vector3.Mag(newVel);
+			if( mNewVel != 0f && mNewVel > mOrigVel ) {
+				newVel *= mOrigVel / mNewVel;
+			}
 			return newVel;
 		}
+#endif
 
-		public Vector3 FieldStrength (Vector3 current, Vector3 size, Vector3 inFront)
+		public Vector3 FieldStrength (Vector3 currentPos, Vector3 size, Vector3 targetPos)
 		{
-			Vector3 retVal = Vector3.Zero;
 			float length = size.X/2;
 			float width = size.Y/2;
 			float height = size.Z/2;
 			
 			//keep us in bounds
-			if (inFront.X > m_endX)
-				retVal.X -= inFront.X - m_endX - length;
-			if (inFront.Y > m_endY)
-				retVal.Y -= inFront.Y - m_endY - width;
-			if (inFront.Z > m_endZ)
-				retVal.Z -= inFront.Z - m_endZ - height;
-			if (inFront.X < m_startX)
-				retVal.X += m_startX - inFront.X + length;
-			if (inFront.Y < m_startY)
-				retVal.Y += m_startY - inFront.Y + width;
-			if (inFront.Z < m_startZ)
-				retVal.Z += m_startZ - inFront.Z + height;
+			targetPos.X = Math.Min( targetPos.X, m_endX - length );
+			targetPos.X = Math.Max(targetPos.X, m_startX + length);
+			targetPos.Y = Math.Min( targetPos.Y, m_endY - width );
+			targetPos.Y = Math.Max(targetPos.Y, m_startY + width);
+			targetPos.Z = Math.Min( targetPos.Z, m_endZ - height );
+			targetPos.Z = Math.Max(targetPos.Z, m_startZ + height);
+			
+			int count = 0;
 			
 			//now get the field strength at the inbounds position
-			UUID collider = LookUp (inFront + retVal);
-			while (collider != UUID.Zero) {
+			UUID collider = LookUp (targetPos);
+			while (collider != UUID.Zero && count < 100) {
+				count++;
 				if (collider == TERRAIN) {
-					// ground height at current and dest averaged
-					float h1 = m_scene.GetGroundHeight (current.X, current.Y);
-					float h2 = m_scene.GetGroundHeight (inFront.X, inFront.Y);
+					// ground height at currentPos and dest averaged
+					float h1 = m_scene.GetGroundHeight (currentPos.X, currentPos.Y);
+					float h2 = m_scene.GetGroundHeight (targetPos.X, targetPos.Y);
 					float h = (h1 + h2) / 2;
-					retVal.Z += h;
+					targetPos.Z = h + height;
 				} else if (collider == EDGE) {
-					// we ain't ever going to hit these
+					//keep us in bounds
+					targetPos.X = Math.Min( targetPos.X, m_endX - length );
+					targetPos.X = Math.Max(targetPos.X, m_startX + length);
+					targetPos.Y = Math.Min( targetPos.Y, m_endY - width );
+					targetPos.Y = Math.Max(targetPos.Y, m_startY + width);
+					targetPos.Z = Math.Min( targetPos.Z, m_endZ - height );
+					targetPos.Z = Math.Max(targetPos.Z, m_startZ + height);
 				} else {
 					//we have hit a SOG
-					SceneObjectGroup sog = m_scene.GetSceneObjectPart (collider).ParentGroup;
+					SceneObjectGroup sog = m_scene.GetSceneObjectPart(collider).ParentGroup;
 					if (sog == null) {
 						Console.WriteLine (collider);
 					} else {
 						float sogMinX, sogMinY, sogMinZ, sogMaxX, sogMaxY, sogMaxZ;
 						sog.GetAxisAlignedBoundingBoxRaw (out sogMinX, out sogMaxX, out sogMinY, out sogMaxY, out sogMinZ, out sogMaxZ);
+						Vector3 pos = sog.AbsolutePosition;
 						//keep us out of the sog
-						if (inFront.X > sogMinX)
-							retVal.X -= inFront.X - sogMinX - length;
-						if (inFront.Y > sogMinY)
-							retVal.Y -= inFront.Y - sogMinY - width;
-						if (inFront.Z > sogMinZ)
-							retVal.Z -= inFront.Z - sogMinZ - height;
-						if (inFront.X < sogMaxX)
-							retVal.X += sogMaxX - inFront.X + length;
-						if (inFront.Y < sogMaxY)
-							retVal.Y += sogMaxY - inFront.Y + width;
-						if (inFront.Z < sogMaxZ)
-							retVal.Z += sogMaxZ - inFront.Z + height;
+						// adjust up/down first if necessary
+						// then turn left or right
+						if (targetPos.Z > sogMinZ + pos.Z)
+							targetPos.Z = (sogMinZ + pos.Z) - height;
+						if (targetPos.Z < sogMaxZ + pos.Z)
+							targetPos.Z = (sogMaxZ + pos.Z)  + height;
+						if (targetPos.X > sogMinX + pos.X)
+							targetPos.X = (sogMinX + pos.X) - length;
+						if (targetPos.Y > sogMinY + pos.Y)
+							targetPos.Y = (sogMinY + pos.Y) - width;
+						if (targetPos.X < sogMaxX + pos.X)
+							targetPos.X  = (sogMaxX + pos.X) + length;
+						if (targetPos.Y < sogMaxY + pos.Y)
+							targetPos.Y = (sogMaxY + pos.Y)  + width;
 					}
 				} 
-				collider = LookUp (inFront + retVal);
-				//inFront += retVal;
+				
+				// we what is at the new target position
+				collider = LookUp (targetPos);
 			} 
 			
-			return retVal;
+			return targetPos;
 		}
 
 		public UUID LookUp (Vector3 loc)

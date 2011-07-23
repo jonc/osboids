@@ -54,8 +54,9 @@ namespace Flocking
 			m_owner = owner;
 		}
 		
-		public String BoidPrim {
-			set{ m_boidPrim = value;}
+		public string BoidPrim { 
+			get{ return m_boidPrim; }
+			set{ m_boidPrim = value; }
 		}
 
 		public Vector3 GetBoidSize ()

@@ -39,6 +39,7 @@ namespace Flocking
 		private Random m_rnd = new Random(Environment.TickCount);
 		private int m_flockSize;
 		private Vector3 m_boidSize;
+		private Vector3 m_startPos;
 		
 		public int Size {
 			get {return m_flockSize;}
@@ -51,21 +52,17 @@ namespace Flocking
 			}
 		}
 		
-		public FlockingModel( BoidBehaviour behaviour ) {
+		public FlockingModel( BoidBehaviour behaviour, Vector3 startPos ) {
 			m_behaviour = behaviour;
+			m_startPos = startPos;
 		}
 
 		void AddBoid (string name)
 		{
-			Boid boid = new Boid (name, m_boidSize, m_behaviour, m_flowField);
+			Boid boid = new Boid (name, m_boidSize, m_behaviour);
 			
-			// find an initial random location for this Boid
-			// somewhere not within an obstacle
-			int xInit = m_rnd.Next(Util.SCENE_SIZE);
-			int yInit = m_rnd.Next(Util.SCENE_SIZE);
-			int zInit = m_rnd.Next(Util.SCENE_SIZE);
-			Vector3 location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
-			boid.Location = location + m_flowField.AdjustVelocity(boid, 5f);
+			boid.Location = m_startPos;
+			boid.Velocity = Vector3.UnitX;
 			m_flock.Add (boid);
 		}
 		
@@ -77,6 +74,7 @@ namespace Flocking
 			m_boidSize = boidSize;
   			for (int i = 0; i < m_flockSize; i++) {
 				AddBoid ("boid"+i );
+				UpdateFlockPos();
   			}
 		}
 		
@@ -91,7 +89,7 @@ namespace Flocking
 		public List<Boid> UpdateFlockPos ()
 		{
 			m_flock.ForEach( delegate(Boid boid) {
-				boid.MoveInSceneRelativeToFlock(GetNeighbours(boid));	
+				boid.MoveInSceneRelativeToFlock(GetNeighbours(boid), m_flowField);	
 			} );
 			
 			return m_flock;

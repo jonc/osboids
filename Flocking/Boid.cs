@@ -44,7 +44,6 @@ namespace Flocking
 		private Random m_rndnums = new Random (Environment.TickCount);
 		
 		private BoidBehaviour m_behaviour;
-		private FlowField m_flowField;
 
 		
 		/// <summary>
@@ -59,31 +58,31 @@ namespace Flocking
 		/// <param name='mf'>
 		/// Mf. max force / acceleration this boid can extert
 		/// </param>
-		public Boid (string id, Vector3 size, BoidBehaviour behaviour, FlowField flowField)
+		public Boid (string id, Vector3 size, BoidBehaviour behaviour)
 		{
 			m_id = id;
 			m_acc = Vector3.Zero;
 			m_vel = new Vector3 (m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1));
 			m_size = size;
 			m_behaviour = behaviour;
-			m_flowField = flowField;
 		}
 		
 		public Vector3 Location {
-			get { return m_loc;}
+			get { return m_loc; }
 			set { m_loc = value; }
 		}
 
 		public Vector3 Velocity {
-			get { return m_vel;}
+			get { return m_vel; }
+			set { m_vel = value; }
 		}
 		
 		public Vector3 Size {
-			get { return m_size;}
+			get { return m_size; }
 		}
 
 		public String Id {
-			get {return m_id;}
+			get { return m_id; }
 		}
 		
 		/// <summary>
@@ -92,15 +91,14 @@ namespace Flocking
 		/// <param name='boids'>
 		/// Boids. all the other chaps in the scene
 		/// </param>
-		public void MoveInSceneRelativeToFlock (List<Boid> neighbours)
+		public void MoveInSceneRelativeToFlock (List<Boid> neighbours, FlowField field)
 		{
-			//List<Boid> neighbours = m_model.GetNeighbours(this);
 			// we would like to stay with our mates
 			Flock (neighbours);
 
-			// our first priority is to not hurt ourselves
+			// however, our first priority is to not hurt ourselves
 			// so adjust where we would like to go to avoid hitting things
-			AvoidObstacles ();
+			AvoidObstacles (field);
 			
 			// then we want to avoid any threats
 			//		this not implemented yet
@@ -127,7 +125,7 @@ namespace Flocking
 			Vector3 sep = Separate (neighbours);   // Separation
 			Vector3 ali = Align (neighbours);      // Alignment
 			Vector3 coh = Cohesion (neighbours);   // Cohesion
-			Vector3 ori = Orientation();
+			Vector3 ori = Orientation();		   // its tricky to fly directly up or down	
 			
 			// Arbitrarily weight these forces
 			sep *= m_behaviour.separationWeighting; 
@@ -213,10 +211,23 @@ namespace Flocking
 		/// <summary>
 		/// navigate away from whatever it is we are too close to
 		/// </summary>
-		void AvoidObstacles ()
+		void AvoidObstacles (FlowField field)
 		{
 			//look tolerance metres ahead
-			m_acc += m_flowField.AdjustVelocity( this, m_behaviour.tolerance ); 
+			//m_acc += field.AdjustVelocity( this, m_behaviour.lookaheadDistance ); 
+			Vector3 normVel = Vector3.Normalize (m_vel);
+			Vector3 inFront = m_loc + normVel * m_behaviour.LookaheadDistance;
+			
+			Vector3 adjustedDestintation = field.FieldStrength (m_loc, m_size, inFront);
+			Vector3 newVel = Vector3.Normalize (adjustedDestintation - m_loc) * Vector3.Mag (m_vel);
+			
+			float mOrigVel = Vector3.Mag(m_vel);
+			float mNewVel = Vector3.Mag(newVel);
+			if( mNewVel != 0f && mNewVel > mOrigVel ) {
+				newVel *= mOrigVel / mNewVel;
+			}
+			m_vel = newVel;
+
 		}
 
 		
@@ -243,6 +254,9 @@ namespace Flocking
 			tooCloseNeighbours.ForEach( delegate(Boid neighbour) {
 				// Calculate vector pointing away from neighbor
 				Vector3 diff = m_loc - neighbour.Location;
+				if( diff == Vector3.Zero ) { 
+					diff = new Vector3( (float)m_rndnums.NextDouble(), (float)m_rndnums.NextDouble(), (float)m_rndnums.NextDouble());
+				}
 				steer += Utils.GetNormalizedVector(diff) / (float)(Utils.GetDistanceTo (m_loc, neighbour.Location));			
 			});
 			
