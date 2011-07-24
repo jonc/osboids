@@ -1,17 +1,10 @@
 
-08/07/2011 - Initial pre alpha release
-	Basic Flocking algos implemented
-	Border avoidance not so good
-	No configuration capabilities 
-
-09/07/2011
-	Fixed Boid rotation, boid now orients with direction of travel
-	added command handlers for both console and inworld chat channel
-	added commands for setting size of flock, prim to use for boid
-	added commands to start and stop the boids flocking 
-
-13/07/2011
-	added more documentation
+23/07/2011
+	added ability to script boid behaviour from lsl
+	tidied up copyright notices
+	further flow field work - still flying into objects, so still work to do here
+	flocking simulation now doesn't start until invoked by start command
+	flow field now recalculated on each start - so can edit scene and restart takes this into account
 
 21/07/2011
 	introduced branch based on stable 0.7.1.1 opensim code. This currently ahead of master
@@ -19,11 +12,19 @@
 	improved the collision algorithms somewhat
 	added orientation flock step that attempts to limit excessive vertical velocity vectors
 
-23/07/2011
-	added ability to script boid behaviour from lsl
-	tidied up copyright notices
-	further flow field work - still flying into objects, so still work to do here
-	flocking simulation now doesn't start until invoked by start command
-	flow field now recalculated on each start - so can edit scene and restart takes this into account
+13/07/2011
+	added more documentation
+
+09/07/2011
+	Fixed Boid rotation, boid now orients with direction of travel
+	added command handlers for both console and inworld chat channel
+	added commands for setting size of flock, prim to use for boid
+	added commands to start and stop the boids flocking 
+
+08/07/2011 - Initial pre alpha release
+	Basic Flocking algos implemented
+	Border avoidance not so good
+	No configuration capabilities 
+
 
 	
