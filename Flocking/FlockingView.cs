@@ -58,6 +58,11 @@ namespace Flocking
 			get{ return m_boidPrim; }
 			set{ m_boidPrim = value; }
 		}
+		
+		public Scene Scene {
+			get {return m_scene;}
+		}
+
 
 		public Vector3 GetBoidSize ()
 		{

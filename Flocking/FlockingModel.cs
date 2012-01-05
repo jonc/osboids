@@ -31,15 +31,30 @@ using Utils = OpenSim.Framework.Util;
 
 namespace Flocking
 {
+	public enum FlockGoal
+	{
+    	Roost = 0x01,
+    	Perch = 0x02,
+    	Flock = 0x04,
+	}
+	
 	public class FlockingModel
 	{
         private List<Boid> m_flock = new List<Boid>();
 		private FlowField m_flowField;
 		private BoidBehaviour m_behaviour;		
-		private Random m_rnd = new Random(Environment.TickCount);
-		private int m_flockSize;
+		private int m_flockSize = 100;
 		private Vector3 m_boidSize;
 		private Vector3 m_startPos;
+		private FlockGoal m_goal = FlockGoal.Flock;
+		private bool m_active = false;
+		private int m_minX = 0;
+		private int m_maxX = 256;
+		private int m_minY = 0;
+		private int m_maxY = 256;
+		private int m_minZ = 0;
+		private int m_maxZ = 256;
+
 		
 		public int Size {
 			get {return m_flockSize;}
@@ -52,7 +67,86 @@ namespace Flocking
 			}
 		}
 		
-		public FlockingModel( BoidBehaviour behaviour, Vector3 startPos ) {
+		public FlockGoal Goal {
+			get { return m_goal; }
+			set { m_goal = value; }
+		}
+
+		public int MaxX {
+			get {
+				return this.m_maxX;
+			}
+			set {
+				m_maxX = value;
+			}
+		}
+
+		public int MaxY {
+			get {
+				return this.m_maxY;
+			}
+			set {
+				m_maxY = value;
+			}
+		}
+
+		public int MaxZ {
+			get {
+				return this.m_maxZ;
+			}
+			set {
+				m_maxZ = value;
+			}
+		}
+
+		public int MinX {
+			get {
+				return this.m_minX;
+			}
+			set {
+				m_minX = value;
+			}
+		}
+
+		public int MinY {
+			get {
+				return this.m_minY;
+			}
+			set {
+				m_minY = value;
+			}
+		}
+
+		public int MinZ {
+			get {
+				return this.m_minZ;
+			}
+			set {
+				m_minZ = value;
+			}
+		}		
+		public bool Active {
+			get { return m_active; }
+			set { m_active = value; }
+		}
+		
+		public Vector3 StartPosition {
+			get { return m_startPos; }
+			set { m_startPos = value; }
+		}
+		
+		public BoidBehaviour Behaviour {
+			get { return m_behaviour; }
+			set { m_behaviour = value; }
+		}
+		
+		public Vector3 BoidSize {
+			set { m_boidSize = value; }
+		}
+		
+		
+		public FlockingModel( FlowField field, BoidBehaviour behaviour, Vector3 startPos ) {
+			m_flowField = field;
 			m_behaviour = behaviour;
 			m_startPos = startPos;
 		}
@@ -60,21 +154,26 @@ namespace Flocking
 		void AddBoid (string name)
 		{
 			Boid boid = new Boid (name, m_boidSize, m_behaviour);
-			
-			boid.Location = m_startPos;
+			double d1 = ( Utils.RandomClass.NextDouble() - 0.5 ) * 20;
+			double d2 = ( Utils.RandomClass.NextDouble() - 0.5 ) * 20;
+			double d3 = ( Utils.RandomClass.NextDouble() - 0.5 ) * 20;
+			boid.Location = m_startPos + new Vector3( (float)d1, (float)d2, (float)d3 );
 			boid.Velocity = Vector3.UnitX;
 			m_flock.Add (boid);
 		}
+
+		public bool ContainsPoint (Vector3 position)
+		{
+			return m_flowField.ContainsPoint( position );
+		}
 		
 		
-		public void Initialise (int flockSize, Vector3 boidSize, FlowField flowField)
+		public void Initialise (FlowField flowField)
 		{
 			m_flowField = flowField;
-			m_flockSize = flockSize;
-			m_boidSize = boidSize;
   			for (int i = 0; i < m_flockSize; i++) {
 				AddBoid ("boid"+i );
-				UpdateFlockPos();
+				//UpdateFlockPos();
   			}
 		}
 		
@@ -88,9 +187,11 @@ namespace Flocking
 
 		public List<Boid> UpdateFlockPos ()
 		{
-			m_flock.ForEach( delegate(Boid boid) {
-				boid.MoveInSceneRelativeToFlock(GetNeighbours(boid), m_flowField);	
-			} );
+			if( m_active ) {
+				m_flock.ForEach( delegate(Boid boid) {
+					boid.MoveInSceneRelativeToFlock(GetNeighbours(boid), m_flowField);	
+				} );
+			}
 			
 			return m_flock;
 		}
@@ -99,7 +200,8 @@ namespace Flocking
 		public override string ToString ()
 		{
 			string retVal = "Num Boids: " + m_flockSize + Environment.NewLine
-				+ m_behaviour.ToString();
+				+ m_behaviour.ToString() + Environment.NewLine
+				+ m_flowField.ToString();
 			
 			return retVal;
 		}

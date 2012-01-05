@@ -136,7 +136,7 @@ namespace Flocking
 			m_acc += sep;
 			m_acc += ali;
 			m_acc += coh;
-			m_acc += ori;
+			//m_acc += ori;
 			
 		}
 		

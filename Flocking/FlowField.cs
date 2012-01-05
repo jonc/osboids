@@ -63,16 +63,16 @@ namespace Flocking
 		/// Height.
 		/// </param>
 		///
-		public FlowField (Scene scene, Vector3 centre, int width, int depth, int height)
+		public FlowField (Scene scene, int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
 		{
 			m_scene = scene;
 			
-			m_startX = Math.Max (BUFFER, centre.X - width / 2f);
-			m_startY = Math.Max (BUFFER, centre.Y - depth / 2f);
-			m_startZ = Math.Max (BUFFER, centre.Z - height / 2f);
-			m_endX = Math.Min (Util.SCENE_SIZE - BUFFER, centre.X + width / 2f);
-			m_endY = Math.Min (Util.SCENE_SIZE - BUFFER, centre.Y + depth / 2f);
-			m_endZ = Math.Min (Util.SCENE_SIZE - BUFFER, centre.Z + height / 2f);
+			m_startX = Math.Max (BUFFER, minX);
+			m_startY = Math.Max (BUFFER, minY);
+			m_startZ = Math.Max (BUFFER, minZ);
+			m_endX = Math.Min (Util.SCENE_SIZE - BUFFER, maxX);
+			m_endY = Math.Min (Util.SCENE_SIZE - BUFFER, maxY);
+			m_endZ = Math.Min (Util.SCENE_SIZE - BUFFER, maxZ);
 			
 			// build the flow field over the given bounds
 			Initialize ();			
@@ -140,6 +140,16 @@ namespace Flocking
 					}
 				}
 			}
+		}
+
+		public bool ContainsPoint (Vector3 p)
+		{
+			return p.X > m_startX && 
+				p.X < m_endX &&
+				p.Y > m_startY &&
+				p.Y < m_endY &&
+				p.Z > m_startZ &&
+				p.Z < m_endZ;
 		}
 
 		private bool inBounds (int x, int y, int z)
@@ -237,6 +247,17 @@ namespace Flocking
 		public UUID LookUp (Vector3 loc)
 		{
 			return m_field [(int)loc.X, (int)loc.Y, (int)loc.Z];
+		}
+		
+		public override string ToString ()
+		{
+			return string.Format ("[FlowField]" + Environment.NewLine +
+				"startX = {0}" + Environment.NewLine +
+				"endX   = {1}" + Environment.NewLine +
+				"startY = {2}" + Environment.NewLine +
+				"endY   = {3}" + Environment.NewLine +
+				"startZ = {4}" + Environment.NewLine +
+				"endZ   = {5}", m_startX, m_endX, m_startY, m_endY, m_startZ, m_endZ);
 		}
 	}
 }

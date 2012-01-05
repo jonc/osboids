@@ -63,31 +63,86 @@ namespace Flocking
 		}
 	}
 
-	public class FlockingCommandParser
+	public class FlockingController
 	{
 		private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
-		private IRegionModuleBase m_module;
+		public object UI_SYNC = new object ();
+
 		private Scene m_scene;
+		private FlockingModel m_model;
+		private FlockingView m_view;
 		private int m_chatChannel;
 		private UUID m_owner;
 		private Dictionary<string, BoidCmdDelegate> m_commandMap = new Dictionary<string, BoidCmdDelegate> ();
 		private Dictionary<string, BoidCmdDefn> m_syntaxMap = new Dictionary<string, BoidCmdDefn> ();
+		private uint m_frame = 0;
+		private int m_frameUpdateRate = 1;
+		private Vector3 m_startPos = new Vector3 (128f, 128f, 128f);
+		private int m_minX = 0;
+		private int m_maxX = 256;
+		private int m_minY = 0;
+		private int m_maxY = 256;
+		private int m_minZ = 0;
+		private int m_maxZ = 256;
+
 
 		
-		public FlockingCommandParser (IRegionModuleBase module, Scene scene, int channel)
+		public FlockingController (Scene scene, BoidBehaviour behaviour, int channel, string prim, int flockSize)
 		{
-			m_module = module;
+			//make the view
+			// who is the owner for the flock in this region
+			UUID owner = scene.RegionInfo.EstateSettings.EstateOwner;
+			m_view = new FlockingView (scene);
+			m_view.PostInitialize (owner);
+			m_view.BoidPrim = prim;
+
+			//make the model			
+			FlowField field = new FlowField( scene, m_minX, m_maxX, m_minY, m_maxY, m_minZ, m_maxZ);
+			FlockingModel model = new FlockingModel(field, behaviour, m_startPos);
+			Vector3 startPos = new Vector3(128f, 128f, 128f);//scene.GetSceneObjectPart (View.BoidPrim).ParentGroup.AbsolutePosition;
+			model.StartPosition = startPos; // TODO: by default start from the prim
+
+			m_model = model;
 			m_scene = scene;
 			m_chatChannel = channel;
 			
 			// who do we respond to in send messages
-			m_owner = scene.RegionInfo.EstateSettings.EstateOwner;
+			m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
 
 			// register our event handlers
-			m_scene.EventManager.OnChatFromClient += ProcessChatCommand; //listen for commands sent from the client
-      			
-			IScriptModuleComms commsMod = scene.RequestModuleInterface<IScriptModuleComms>();
-      		commsMod.OnScriptCommand += ProcessScriptCommand;
+			m_scene.EventManager.OnFrame += FlockUpdate; // plug in to the game loop
+			m_scene.EventManager.OnChatFromClient += ProcessChatCommand; //listen for commands sent from the client      			
+			IScriptModuleComms commsMod = m_scene.RequestModuleInterface<IScriptModuleComms>();
+      		commsMod.OnScriptCommand += ProcessScriptCommand; // listen to scripts
+		}
+		
+		public void Start()
+		{
+			//ask the view how big the boid prim is
+			Vector3 scale = View.GetBoidSize ();
+				
+			FlowField field = new FlowField( m_scene, m_minX, m_maxX, m_minY, m_maxY, m_minZ, m_maxZ);
+			// init model
+			m_log.Info ("creating model");
+			// Generate initial flock values
+			m_model.BoidSize = scale;
+			m_model.Initialise (field);
+			m_log.Info ("done");
+
+		}
+
+		
+		public int FrameUpdateRate {
+			get { return m_frameUpdateRate; }
+			set { m_frameUpdateRate = value; } 
+		}
+		
+		public FlockingModel Model {
+			get { return m_model; }
+		}
+		
+		public FlockingView View {
+			get { return m_view; }
 		}
 
 		public void Deregister ()
@@ -95,26 +150,48 @@ namespace Flocking
 			m_scene.EventManager.OnChatFromClient -= ProcessChatCommand;
 			IScriptModuleComms commsMod = m_scene.RequestModuleInterface<IScriptModuleComms>();
       		commsMod.OnScriptCommand -= ProcessScriptCommand;
+			m_scene.EventManager.OnFrame -= FlockUpdate;
 		}
 		
-		public void AddCommand (string cmd, string args, string help, CommandDelegate fn)
+		public void AddCommand (IRegionModuleBase module, FlockingCommand cmd)
 		{
+			cmd.Controller = this;
+			string name = cmd.Name;
+			string args = cmd.Params;
+			string help = cmd.Description;
+			CommandDelegate fn =cmd.Handle;
+			
 			string argStr = "";
 			if (args.Trim ().Length > 0) {
 				argStr = " <" + args + "> ";
 			}
-			m_commandMap.Add (cmd, new BoidCmdDelegate (fn));
-			m_syntaxMap.Add (cmd, new BoidCmdDefn (cmd, args, help));
+			m_commandMap.Add (name, new BoidCmdDelegate (fn));
+			m_syntaxMap.Add (name, new BoidCmdDefn (name, args, help));
 			// register this command with the console
-			m_scene.AddCommand (m_module, "flock-" + cmd, "flock-" + cmd + argStr, help, fn);
+			m_scene.AddCommand (module, "flock-" + name, "flock-" + name + argStr, help, fn);
 		}
 
 
 		#region handlers
 		
+		public void FlockUpdate ()
+		{
+			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_model.Active) {
+				return;
+			}
+			// work out where everyone has moved to
+			// and tell the scene to render the new positions
+			lock (UI_SYNC) {
+				List<Boid > boids = m_model.UpdateFlockPos ();
+				m_view.Render (boids);
+			}
+		}
+		
+
+		
 		public void ProcessScriptCommand (UUID scriptId, string reqId, string module, string input, string key)
 		{
-			if (m_module.Name != module) {
+			if (FlockingModule.NAME != module) {
 				return;
 			}
 
@@ -173,7 +250,7 @@ namespace Flocking
 					// we got the signature of the command right
 					BoidCmdDelegate del = null;
 					if (m_commandMap.TryGetValue (args [0], out del)) {
-						del (m_module.Name, args);
+						del (FlockingModule.NAME, args);
 					} else {
 						// we don't understand this command
 						// shouldn't happen
