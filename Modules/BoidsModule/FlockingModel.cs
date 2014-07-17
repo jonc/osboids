@@ -39,6 +39,7 @@ namespace Flocking
 		private float m_neighbourDistance;
 		private float m_desiredSeparation;
 		private float m_tolerance;
+        private float m_border;
 		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
@@ -53,12 +54,13 @@ namespace Flocking
 			}
 		}
 		
-		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance ) {
+		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance, float border) {
 			m_maxSpeed = maxSpeed;
 			m_maxForce = maxForce;
 			m_neighbourDistance = neighbourDistance;
 			m_desiredSeparation = desiredSeparation;
 			m_tolerance = tolerance;
+            m_border = border;
 		}
 
 		void AddBoid (string name)

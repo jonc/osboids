@@ -36,16 +36,22 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
+using Mono.Addins;
+
+[assembly: Addin("BoidsModule", "0.1")]
+[assembly: AddinDependency("OpenSim", "0.5")]
 
 namespace Flocking
 {
-	public class FlockingModule : INonSharedRegionModule
-	{
-
-		private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
+    [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule")]
+    public class FlockingModule : INonSharedRegionModule
+    {
+        #region Fields
+        private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
 		static object m_sync = new object();
 
-		private Scene m_scene;
+        public string m_name = "BoidsModule";
+        private Scene m_scene;
 		private FlockingModel m_model;
 		private FlockingView m_view;
 		private bool m_enabled = false;
@@ -60,14 +66,15 @@ namespace Flocking
 		private float m_neighbourDistance;
 		private float m_desiredSeparation;
 		private float m_tolerance;
+        private float m_borderSize;
+        private int m_maxHeight;
 
 		private UUID m_owner;
+        #endregion
 
-		#region IRegionModule Members
+        #region IRegionModuleBase implementation
 
-
-
-		public void Initialise (IConfigSource source)
+        public void Initialise (IConfigSource source)
 		{
 			//check if we are in the ini files
 			//if so get some physical constants out of them and pass into the model
@@ -81,30 +88,41 @@ namespace Flocking
 				m_neighbourDistance = config.GetFloat("neighbour-dist", 25f);
 				m_desiredSeparation = config.GetFloat("desired-separation", 20f);
 				m_tolerance = config.GetFloat("tolerance", 5f);
-				
-				
-				// we're in the config - so turn on this module
-				m_enabled = true;
+                m_borderSize = config.GetFloat("border-size", 5f);
+                m_maxHeight = config.GetInt("max-height", 256);
+                m_enabled = config.GetBoolean("enabled", false);
 			}
+
+            if (m_enabled)
+            {
+                m_log.InfoFormat("[BOIDS] Enabled on channel {0} with Flock Size {1}", m_chatChannel, m_flockSize);
+                //m_ready = true;
+                return;
+            }
 		}
+
+        public void PostInitialise()
+        {
+        }
 
 		public void AddRegion (Scene scene)
 		{
-			m_log.Info ("ADDING FLOCKING");
-			m_scene = scene;
-			if (m_enabled) {
-				//register commands
-				RegisterCommands ();
-				
-				//register handlers
-				m_scene.EventManager.OnFrame += FlockUpdate;
-				m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
+            m_scene = scene;
+            m_log.InfoFormat ("[BOIDS]: Adding {0}", scene.RegionInfo.RegionName);
+            if (m_enabled)
+            {
+                //register commands
+                RegisterCommands();
 
-				// init module
-				m_model = new FlockingModel (m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance);
-				m_view = new FlockingView (m_scene);
-				m_view.BoidPrim = m_boidPrim;
-			}
+                //register handlers
+                scene.EventManager.OnFrame += FlockUpdate;
+                scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
+
+                // init module
+                m_model = new FlockingModel(m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance, m_borderSize);
+                m_view = new FlockingView(scene);
+                m_view.BoidPrim = m_boidPrim;
+             }
 		}
 
 		public void RegionLoaded (Scene scene)
@@ -112,14 +130,14 @@ namespace Flocking
 			if (m_enabled) {
 				
 				//make a flow map for this scene
-				FlowMap flowMap = new FlowMap(scene );
+                FlowMap flowMap = new FlowMap(scene, m_maxHeight, m_borderSize);
 				flowMap.Initialise();
 				
 				// Generate initial flock values
 				m_model.Initialise (m_flockSize, flowMap);
 				
 				// who is the owner for the flock in this region
-				m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
+				m_owner = scene.RegionInfo.EstateSettings.EstateOwner;
 				m_view.PostInitialize (m_owner);
 
 				// Mark Module Ready for duty
@@ -130,18 +148,34 @@ namespace Flocking
 		public void RemoveRegion (Scene scene)
 		{
 			if (m_enabled) {
-				m_scene.EventManager.OnFrame -= FlockUpdate;
-				m_scene.EventManager.OnChatFromClient -= SimChatSent;
+                m_ready = false;
+				scene.EventManager.OnFrame -= FlockUpdate;
+				scene.EventManager.OnChatFromClient -= SimChatSent;
 			}
 		}
 
+        public void Close()
+        {
+            if (m_enabled)
+            {
+                m_ready = false;
+                m_scene.EventManager.OnFrame -= FlockUpdate;
+                m_scene.EventManager.OnChatFromClient -= SimChatSent;
+            }
+        }
+
 		public string Name {
-			get { return "FlockingModule"; }
+			get { return m_name; }
 		}
 
 		public bool IsSharedModule {
 			get { return false; }
 		}
+
+        public Type ReplaceableInterface
+        {
+            get { return null; }
+        }
 
 		#endregion
 		
@@ -234,7 +268,7 @@ namespace Flocking
 			if (inWorld) {
 				IClientAPI ownerAPI = null;
 				if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
-					ownerAPI.SendBlueBoxMessage (m_owner, "osboids", response);
+					ownerAPI.SendBlueBoxMessage (m_owner, "Boids", response);
 				}
 			} else {
 				MainConsole.Instance.Output (response);
@@ -299,21 +333,6 @@ namespace Flocking
 
 		#endregion
 
-
-
-		#region IRegionModuleBase Members
-
-
-
-		public void Close ()
-		{
-		}
-
-		public Type ReplaceableInterface {
-			get { return null; }
-		}
-		
-		#endregion
 	}
 	
 }

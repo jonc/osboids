@@ -134,7 +134,7 @@ namespace Flocking
 			PrimitiveBaseShape shape = PrimitiveBaseShape.CreateSphere ();
 			shape.Scale = new Vector3 (0.5f, 0.5f, 0.5f);
 
-			SceneObjectGroup prim = new SceneObjectGroup (m_owner, new Vector3 (128f, 128f, 25f), shape);
+            SceneObjectGroup prim = new SceneObjectGroup(m_owner, new Vector3((float)m_scene.RegionInfo.RegionSizeX / 2, (float)m_scene.RegionInfo.RegionSizeY / 2, 25f), shape);
 			prim.Name = name;
 			prim.DetachFromBackup ();
 			m_scene.AddNewSceneObject (prim, false);

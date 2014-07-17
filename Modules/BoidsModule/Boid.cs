@@ -43,7 +43,10 @@ namespace Flocking
 		
 		private FlockingModel m_model;
 		private FlowMap m_flowMap;
-
+        private int m_regionX;
+        private int m_regionY;
+        private int m_regionZ;
+        private float m_regionBorder;
 		
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Flocking.Boid"/> class.
@@ -64,6 +67,10 @@ namespace Flocking
 			m_vel = new Vector3 (m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1), m_rndnums.Next (-1, 1));
 			m_model = model;
 			m_flowMap = flowMap;
+            m_regionX = m_flowMap.LengthX;
+            m_regionY = m_flowMap.LengthY;
+            m_regionZ = m_flowMap.LengthZ;
+            m_regionBorder = m_flowMap.Border;
 		}
 		
 		public Vector3 Location {
@@ -249,11 +256,11 @@ namespace Flocking
 			// try increaing our acceleration
 			// or try decreasing our acceleration
 			// or turn around - coz where we came from was OK
-			if (m_loc.X < 5 || m_loc.X > 250)
+			if (m_loc.X < m_regionBorder || m_loc.X > m_regionX - m_regionBorder)
 				m_vel.X = -m_vel.X;
-			if (m_loc.Y < 5 || m_loc.Y > 250)
+            if (m_loc.Y < m_regionBorder || m_loc.Y > m_regionY - m_regionBorder)
 				m_vel.Y = -m_vel.Y;
-			if (m_loc.Z < 21 || m_loc.Z > 271 )
+			if (m_loc.Z < 21 || m_loc.Z > m_regionZ )
 				m_vel.Z = -m_vel.Z;
 		}
 		
