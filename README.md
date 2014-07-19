@@ -16,32 +16,24 @@ Configuration
 
 To become active, the module needs to be both referenced and enabled in the ini files. Otherwise it does nothing on startup
 
-Entry is as follows:
+Entry is as follows and in addition various config parameters are available to control the flock dynamics.
 
 
 [Boids]
-	enabled = true
-
-
-removing the Boids group or setting enabled = false will switch off the module
-
-In addition various config parameters are available to control the flock dynamics
-
+	
+	enabled = true          ;removing the Boids group or setting enabled = false will switch off the module
 	flock-size = 100        ;the number of Boids to flock
 	max-speed = 3           ;how far each boid can travel per update
 	max-force = 0.25        ;the maximum acceleration allowed to the current velocity of the boid
 	neighbour-dist = 25	    ;max distance for other boids to be considered in the same flock as us
 	desired-separation = 20 ;how far away from other boids we would like to stay
-	tolerance = 5		        ;how close to the edges of things can we get without being worried
+	tolerance = 5           ;how close to the edges of things can we get without being worried
 	border-size = 5         ;how close to the edge of a region can we get?
 	max-height = 256        ;how high are we allowed to flock
-  
+	boid-prim = fish01      ;By default the module will create a flock of plain wooden spheres, 
+	                        ;however this can be overridden to the name of an existing prim that
+	                        ;needs to already exist in the scene - i.e. be rezzed in the region.
 
-By default the module will create a flock of plain wooden spheres, however this can be overridden
-
-	boid-prim = fish01	names the prim to use to represent each boid in the flock
-				currently this prim needs to already exist in the scene - i.e. be rezzed in the region.
-				Eventually this will be an inventory lookup
 
 
 Various runtime commands control the flocking module behaviour - described below. These can either be invoked
