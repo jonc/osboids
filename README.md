@@ -9,7 +9,7 @@ Add OpenSimBoids source tree under opensim/addon-modules
 then xbuild, or build within Visual Studio / Monodevelop to produce the binaries
 
 OpenSimBoids has no external dependencies other than the dlls currently included in opensim.
-The project generates a single dll - Flocking.dll which is copied into opensim/bin as part of the build step
+The project generates a single dll - OpenSimBoids.Modules.dll which is copied into opensim/bin as part of the build step
 
 
 Configuration
