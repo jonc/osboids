@@ -21,7 +21,7 @@ Entry is as follows and in addition various config parameters are available to c
 
 [Boids]
 	
-	enabled = true          ;removing the Boids group or setting enabled = false will switch off the module
+	enabled = true          ;removing the Boids group or setting enabled=false will switch off the module
 	flock-size = 100        ;the number of Boids to flock
 	max-speed = 3           ;how far each boid can travel per update
 	max-force = 0.25        ;the maximum acceleration allowed to the current velocity of the boid
