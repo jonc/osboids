@@ -1,14 +1,14 @@
-Region Module -  ability to control flocks within an OpenSim scene
+Region Module -  ability to control flocks of prims within an OpenSim scene
 
 
 To build from source
 
-Add osboids source tree under opensim/addon-modules
+Add OpenSimBoids source tree under opensim/addon-modules
 
 ./runprebuild.sh against opensim root to build this module into the solution
 then xbuild, or build within Visual Studio / Monodevelop to produce the binaries
 
-osboids has no external dependencies other than the dlls currently included in opensim.
+OpenSimBoids has no external dependencies other than the dlls currently included in opensim.
 The project generates a single dll - Flocking.dll which is copied into opensim/bin as part of the build step
 
 
@@ -27,13 +27,15 @@ removing the Boids group or setting enabled = false will switch off the module
 
 In addition various config parameters are available to control the flock dynamics
 
-	flock-size = 100	the number of Boids to flock
-	max-speed = 3		how far each boid can travel per update
-	max-force = 0.25	the maximum acceleration allowed to the current velocity of the boid
-	neighbour-dist = 25	max distance for other boids to be considered in the same flock as us
-	desired-separation = 20 how far away from other boids we would like to stay
-	tolerance = 5		how close to the edges of things can we get without being worried
-
+	flock-size = 100        ;the number of Boids to flock
+	max-speed = 3           ;how far each boid can travel per update
+	max-force = 0.25        ;the maximum acceleration allowed to the current velocity of the boid
+	neighbour-dist = 25	    ;max distance for other boids to be considered in the same flock as us
+	desired-separation = 20 ;how far away from other boids we would like to stay
+	tolerance = 5		        ;how close to the edges of things can we get without being worried
+	border-size = 5         ;how close to the edge of a region can we get?
+	max-height = 256        ;how high are we allowed to flock
+  
 
 By default the module will create a flock of plain wooden spheres, however this can be overridden
 

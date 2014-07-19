@@ -12,3 +12,11 @@
 
 13/07/2011
 	added more documentation
+	
+10/07/2014
+  forked from https://github.com/jonc/osboids
+  
+17/07/2014  
+  refactored the code
+  added some more config items to set the region border size (no go zone) and the max height
+  added support to the module for varregions 

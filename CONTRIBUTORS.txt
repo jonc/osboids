@@ -1,4 +1,5 @@
-The following people have contributed to the development of the osboids module
+The following people have contributed to the development of the OpenSimBoids module
 
 * Jon Cundill - initial implementation
+* Jak Daniels - refactor for opensim 0.8.x and varregions
 
