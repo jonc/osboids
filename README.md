@@ -48,17 +48,17 @@ Runtime Commands
 The following commands, which can either be issued on the Console, or via a chat channel in-world, control the behaviour
 of the flock at runtime
 
-	flock-stop or /118 stop in chat 	- stop all flocking and remove boids from the region
-	flock-start or /118 start 		- start the flocking simulation
-	flock-size <num> or /118 size <num>	- change the size of the flock
-	flock-prim <name> or /118 prim <name>	- change the boid prim to that passed in - must be rezzed in the scene
-	flock-framerate <num> or /118 framerate - only update the flock positions every <num> frames - only really useful
-						- for photography and debugging boid behaviour
-
+	flock-stop or /118 stop                       ;stop all flocking and remove boids from the region
+	flock-start or /118 start                     ;start the flocking simulation
+	flock-size <num> or /118 size <num>	          ;change the size of the flock
+	flock-prim <name> or /118 prim <name>	        ;change the boid prim to one already rezzed in the scene
+	flock-framerate <num> or /118 framerate <num> ;only update the flock positions every <num> frames
+	                                              ;only really useful for photography and debugging boid
+	                                              ;behaviour
 
 Boid prims
 
-Any, currently rezzed in scene, object can be used as the boid prim. However fps is very much affected by the
+Any currently rezzed in-scene-object can be used as the boid prim. However fps is very much affected by the
 complexity of the entity to use. It is easier to throw a single prim (or sculpty) around the scene than it is to
 throw the constituent parts of a 200 linked prim dragon.
 
