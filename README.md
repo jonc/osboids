@@ -19,7 +19,7 @@ To become active, the module needs to be both referenced and enabled in the ini 
 Entry is as follows and in addition various config parameters are available to control the flock dynamics.
 
 
-[Boids]
+	[Boids]
 	
 	enabled = true          ;removing the Boids group or setting enabled=false will switch off the module
 	flock-size = 100        ;the number of Boids to flock
