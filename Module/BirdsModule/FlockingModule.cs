@@ -131,7 +131,9 @@ namespace Flocking
 
                 m_log.InfoFormat("[{0}] Enabled on channel {1} with Flock Size {2}", m_name, m_chatChannel, m_flockSize);
 
-                //register commands
+                m_scene = scene;
+
+                //register commands with the scene
                 RegisterCommands();
 
                 //register handlers
@@ -143,7 +145,7 @@ namespace Flocking
                 m_view = new FlockingView(scene);
                 m_view.BirdPrim = m_birdPrim;
                 m_frame = 0;
-                m_scene = scene;
+
              }
 		}
 
