@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * Copyright (c) Contributors, https://github.com/jonc/osbirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ using OpenMetaverse;
 
 namespace Flocking
 {
-	public class Boid
+	public class Bird
 	{
 		private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
 		private string m_id;
@@ -49,18 +49,18 @@ namespace Flocking
         private float m_regionBorder;
 		
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Flocking.Boid"/> class.
+		/// Initializes a new instance of the <see cref="Flocking.Bird"/> class.
 		/// </summary>
 		/// <param name='l'>
-		/// L. the initial position of this boid
+		/// L. the initial position of this bird
 		/// </param>
 		/// <param name='ms'>
-		/// Ms. max speed this boid can attain
+		/// Ms. max speed this bird can attain
 		/// </param>
 		/// <param name='mf'>
-		/// Mf. max force / acceleration this boid can extert
+		/// Mf. max force / acceleration this bird can extert
 		/// </param>
-		public Boid (string id, FlockingModel model, FlowMap flowMap)
+		public Bird (string id, FlockingModel model, FlowMap flowMap)
 		{
 			m_id = id;
 			m_acc = Vector3.Zero;
@@ -87,15 +87,15 @@ namespace Flocking
 		}
 		
 		/// <summary>
-		/// Moves our boid in the scene relative to the rest of the flock.
+		/// Moves our bird in the scene relative to the rest of the flock.
 		/// </summary>
-		/// <param name='boids'>
-		/// Boids. all the other chaps in the scene
+		/// <param name='birds'>
+		/// Birds. all the other chaps in the scene
 		/// </param>
-		public void MoveInSceneRelativeToFlock (List<Boid> boids)
+		public void MoveInSceneRelativeToFlock (List<Bird> birds)
 		{
 			// we would like to stay with our mates
-			Flock (boids);
+			Flock (birds);
 
 			// our first priority is to not hurt ourselves
 			AvoidObstacles ();
@@ -119,13 +119,13 @@ namespace Flocking
 		/// our desire to move towards the flock centre
 		/// 
 		/// </summary>
-		void Flock (List<Boid> boids)
+		void Flock (List<Bird> birds)
 		{
 	
-			// calc the force vectors on this boid 		
-			Vector3 sep = Separate (boids);   // Separation
-			Vector3 ali = Align (boids);      // Alignment
-			Vector3 coh = Cohesion (boids);   // Cohesion
+			// calc the force vectors on this bird 		
+			Vector3 sep = Separate (birds);   // Separation
+			Vector3 ali = Align (birds);      // Alignment
+			Vector3 coh = Cohesion (birds);   // Cohesion
 			
 			// Arbitrarily weight these forces
 			//TODO: expose these consts		
@@ -135,7 +135,7 @@ namespace Flocking
 			//coh.mult(1.0);
 			coh *= 1.0f;
 			
-			// Add the force vectors to the current acceleration of the boid
+			// Add the force vectors to the current acceleration of the bird
 			//acc.add(sep);
 			m_acc += sep;
 			//acc.add(ali);
@@ -159,7 +159,7 @@ namespace Flocking
 			m_vel += m_acc;
 			// Limit speed
 			//m_vel.limit(maxspeed);
-			m_vel = Util.Limit (m_vel, m_model.MaxSpeed);
+			m_vel = BirdsUtil.Limit (m_vel, m_model.MaxSpeed);
 			m_loc += m_vel;
 			// Reset accelertion to 0 each cycle
 			m_acc *= 0.0f;
@@ -209,7 +209,7 @@ namespace Flocking
 				//steer = target.sub(desired,m_vel);
 				steer = Vector3.Subtract (desired, m_vel);
 				//steer.limit(maxforce);  // Limit to maximum steering force
-				steer = Util.Limit (steer, m_model.MaxForce);
+				steer = BirdsUtil.Limit (steer, m_model.MaxForce);
 			} else {
 				steer = Vector3.Zero;
 			}
@@ -265,19 +265,19 @@ namespace Flocking
 		}
 		
 		/// <summary>
-		/// Separate ourselves from the specified boids.
+		/// Separate ourselves from the specified birds.
 		/// keeps us a respectable distance from our closest neighbours whilst still 
 		/// being part of our local flock
 		/// </summary>
-		/// <param name='boids'>
-		/// Boids. all the boids in the scene
+		/// <param name='birds'>
+		/// Birds. all the birds in the scene
 		/// </param>
-		Vector3 Separate (List<Boid> boids)
+		Vector3 Separate (List<Bird> birds)
 		{
 			Vector3 steer = new Vector3 (0, 0, 0);
 			int count = 0;
-			// For every boid in the system, check if it's too close
-			foreach (Boid other in boids) {
+			// For every bird in the system, check if it's too close
+			foreach (Bird other in birds) {
 				float d = Vector3.Distance (m_loc, other.Location);
 				// If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
 				if ((d > 0) && (d < m_model.DesiredSeparation)) {
@@ -301,24 +301,24 @@ namespace Flocking
 				steer *= m_model.MaxSpeed;
 				steer -= m_vel;
 				//steer.limit(maxforce);
-				steer = Util.Limit (steer, m_model.MaxForce);
+				steer = BirdsUtil.Limit (steer, m_model.MaxForce);
 			}
 			return steer;
 		}
 
 		/// <summary>
-		/// Align our boid within the flock.
-		/// For every nearby boid in the system, calculate the average velocity
+		/// Align our bird within the flock.
+		/// For every nearby bird in the system, calculate the average velocity
 		/// and move us towards that - this keeps us moving with the flock.
 		/// </summary>
-		/// <param name='boids'>
-		/// Boids. all the boids in the scene - we only really care about those in the neighbourdist
+		/// <param name='birds'>
+		/// Birds. all the birds in the scene - we only really care about those in the neighbourdist
 		/// </param>
-		Vector3 Align (List<Boid> boids)
+		Vector3 Align (List<Bird> birds)
 		{
 			Vector3 steer = new Vector3 (0, 0, 0);
 			int count = 0;
-			foreach (Boid other in boids) {
+			foreach (Bird other in birds) {
 				float d = Vector3.Distance (m_loc, other.Location);
 				if ((d > 0) && (d < m_model.NeighbourDistance)) {
 					steer += other.Velocity;
@@ -336,7 +336,7 @@ namespace Flocking
 				steer *= m_model.MaxSpeed;
 				steer -= m_vel;
 				//steer.limit(maxforce);
-				steer = Util.Limit (steer, m_model.MaxForce);
+				steer = BirdsUtil.Limit (steer, m_model.MaxForce);
 				
 			}
 			return steer;
@@ -344,18 +344,18 @@ namespace Flocking
 
 		/// <summary>
 		/// MAintain the cohesion of our local flock
-		/// For the average location (i.e. center) of all nearby boids, calculate our steering vector towards that location
+		/// For the average location (i.e. center) of all nearby birds, calculate our steering vector towards that location
 		/// </summary>
-		/// <param name='boids'>
-		/// Boids. the boids in the scene
+		/// <param name='birds'>
+		/// Birds. the birds in the scene
 		/// </param>
-		Vector3 Cohesion (List<Boid> boids)
+		Vector3 Cohesion (List<Bird> birds)
 		{
     
 			Vector3 sum = Vector3.Zero;   // Start with empty vector to accumulate all locations
 			int count = 0;
 			
-			foreach (Boid other in boids) {
+			foreach (Bird other in birds) {
 				float d = Vector3.Distance (m_loc, other.Location);
 				if ((d > 0) && (d < m_model.NeighbourDistance)) {
 					sum += other.Location; // Add location

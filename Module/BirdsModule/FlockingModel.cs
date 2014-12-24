@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,7 @@ namespace Flocking
 {
 	public class FlockingModel
 	{
-        private List<Boid> m_flock = new List<Boid>();
+        private List<Bird> m_flock = new List<Bird>();
 		private FlowMap m_flowMap;
 		private float m_maxSpeed;
 		private float m_maxForce;
@@ -49,7 +50,7 @@ namespace Flocking
 				if( value < m_flock.Count ) {
 					m_flock.RemoveRange( 0, m_flock.Count - value );
 				} else while( value > m_flock.Count ) {
-					AddBoid( "boid"+m_flock.Count);	
+					AddBird( "Bird"+m_flock.Count);	
 				}
 			}
 		}
@@ -63,11 +64,11 @@ namespace Flocking
             m_border = border;
 		}
 
-		void AddBoid (string name)
+		void AddBird (string name)
 		{
-			Boid boid = new Boid (name, this, m_flowMap);
+			Bird Bird = new Bird (name, this, m_flowMap);
 			
-			// find an initial random location for this Boid
+			// find an initial random location for this Bird
 			// somewhere not within an obstacle
 			int xInit = m_rnd.Next(m_flowMap.LengthX);
 			int yInit = m_rnd.Next(m_flowMap.LengthY);
@@ -79,8 +80,8 @@ namespace Flocking
 				zInit = m_rnd.Next(m_flowMap.LengthZ);
 			}
 				
-			boid.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
-			m_flock.Add (boid);
+			Bird.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
+			m_flock.Add (Bird);
 		}
 						
 		public float MaxSpeed {
@@ -108,14 +109,14 @@ namespace Flocking
 		{
 			m_flowMap = flowMap;			
   			for (int i = 0; i < num; i++) {
-				AddBoid ("boid"+i );
+				AddBird ("Bird"+i );
   			}
 		}
 
-		public List<Boid> UpdateFlockPos ()
+		public List<Bird> UpdateFlockPos ()
 		{
-    		foreach (Boid b in m_flock) {
-      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of boids to each boid individually
+    		foreach (Bird b in m_flock) {
+      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of Birds to each Bird individually
     		}
 			
 			return m_flock;

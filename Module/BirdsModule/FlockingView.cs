@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +37,7 @@ namespace Flocking
 	{
 		private Scene m_scene;
 		private UUID m_owner;
-		private String m_boidPrim;
+		private String m_birdPrim;
 		
 		private Dictionary<string, SceneObjectGroup> m_sogMap = new Dictionary<string, SceneObjectGroup> ();
 				
@@ -50,8 +51,8 @@ namespace Flocking
 			m_owner = owner;
 		}
 		
-		public String BoidPrim {
-			set{ m_boidPrim = value;}
+		public String BirdPrim {
+			set{ m_birdPrim = value;}
 		}
 
 		public void Clear ()
@@ -64,36 +65,36 @@ namespace Flocking
             m_sogMap.Clear();
  		}
 
-		public void Render (List<Boid> boids)
+		public void Render (List<Bird> birds)
 		{
-			foreach (Boid boid in boids) {
-				DrawBoid (boid);
+			foreach (Bird bird in birds) {
+				DrawBird (bird);
 			}
 		}
 		
-		private void DrawBoid (Boid boid)
+		private void DrawBird (Bird bird)
 		{
-			SceneObjectPart existing = m_scene.GetSceneObjectPart (boid.Id);
+			SceneObjectPart existing = m_scene.GetSceneObjectPart (bird.Id);
 
 
 			SceneObjectGroup sog;
 			if (existing == null) {
-				SceneObjectGroup group = findByName (m_boidPrim);
-				sog = CopyPrim (group, boid.Id);
-				m_sogMap [boid.Id] = sog;
+				SceneObjectGroup group = findByName (m_birdPrim);
+				sog = CopyPrim (group, bird.Id);
+				m_sogMap [bird.Id] = sog;
 				m_scene.AddNewSceneObject (sog, false);
 			} else {
 				sog = existing.ParentGroup;
 			}
 			
-			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, boid.Location);
-			sog.UpdateGroupRotationPR( boid.Location, rotation);
+			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, bird.Location);
+			sog.UpdateGroupRotationPR( bird.Location, rotation);
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)
 		{
 			//llSetRot(llRotBetween(<1,0,0>,llVecNorm(targetPosition - llGetPos())));
-			// boid wil fly x forwards and Z up
+			// bird wil fly x forwards and Z up
 			
 			Vector3 currDirVec = Vector3.UnitX;
 			Vector3 desiredDirVec = Vector3.Subtract (ev, sv);

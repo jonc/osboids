@@ -20,3 +20,8 @@
   refactored the code
   added some more config items to set the region border size (no go zone) and the max height
   added support to the module for varregions 
+  
+24/12/2014
+	renamed the modeul to OpenSimBirds, changed all references to [Bb]oids to [Bb]irds in code
+	change the configuration to use own ini file and to setup per region configurations
+	changed Util class to BirdsUtil to avoid clash with OpenSim.Util

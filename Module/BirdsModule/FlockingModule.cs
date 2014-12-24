@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,9 +27,11 @@
  */
 using System;
 using System.Timers;
+using System.Net;
+using System.IO;
+using System.Text;
 using System.Collections.Generic;
 using OpenMetaverse;
-using System.IO;
 using Nini.Config;
 using System.Threading;
 using log4net;
@@ -38,19 +41,18 @@ using OpenSim.Framework;
 using OpenSim.Framework.Console;
 using Mono.Addins;
 
-[assembly: Addin("BoidsModule", "0.1")]
+[assembly: Addin("OpenSimBirds", "0.2")]
 [assembly: AddinDependency("OpenSim", "0.5")]
 
 namespace Flocking
 {
-    [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule")]
+    [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "OpenSimBirds")]
     public class FlockingModule : INonSharedRegionModule
     {
         #region Fields
         private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
-		static object m_sync = new object();
 
-        public string m_name = "BoidsModule";
+        public string m_name = "OpenSimBirds";
         private Scene m_scene;
 		private FlockingModel m_model;
 		private FlockingView m_view;
@@ -59,7 +61,7 @@ namespace Flocking
 		private uint m_frame = 0;
 		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
-		private string m_boidPrim;
+		private string m_birdPrim;
 		private int m_flockSize = 100;
 		private float m_maxSpeed;
 		private float m_maxForce;
@@ -68,49 +70,67 @@ namespace Flocking
 		private float m_tolerance;
         private float m_borderSize;
         private int m_maxHeight;
+        static object m_sync = new object();
+
+        public IConfigSource m_config;
 
 		private UUID m_owner;
         #endregion
 
         #region IRegionModuleBase implementation
 
+        public string Name { get { return m_name; } }
+        public Type ReplaceableInterface { get { return null; } }
+        public bool IsSharedModule { get { return false; } }
+
         public void Initialise (IConfigSource source)
 		{
-			//check if we are in the ini files
-			//if so get some physical constants out of them and pass into the model
-			IConfig config = source.Configs ["Boids"];
-			if (config != null) {
-				m_chatChannel = config.GetInt ("chat-channel", 118);
-				m_boidPrim = config.GetString ("boid-prim", "boidPrim");
-				m_flockSize = config.GetInt ("flock-size", 100);
-				m_maxSpeed = config.GetFloat("max-speed", 3f);
-				m_maxForce = config.GetFloat("max-force", 0.25f);
-				m_neighbourDistance = config.GetFloat("neighbour-dist", 25f);
-				m_desiredSeparation = config.GetFloat("desired-separation", 20f);
-				m_tolerance = config.GetFloat("tolerance", 5f);
-                m_borderSize = config.GetFloat("border-size", 5f);
-                m_maxHeight = config.GetInt("max-height", 256);
-                m_enabled = config.GetBoolean("enabled", false);
-			}
-
-            if (m_enabled)
-            {
-                m_log.InfoFormat("[BOIDS] Enabled on channel {0} with Flock Size {1}", m_chatChannel, m_flockSize);
-                //m_ready = true;
-                return;
-            }
+            m_config = source;
 		}
-
-        public void PostInitialise()
-        {
-        }
 
 		public void AddRegion (Scene scene)
 		{
-            m_scene = scene;
-            m_log.InfoFormat ("[BOIDS]: Adding {0}", scene.RegionInfo.RegionName);
+            m_log.InfoFormat("[{0}]: Adding region '{1}' to this module", m_name, scene.RegionInfo.RegionName);
+
+            string moduleConfigFile = Path.Combine(Util.configDir(), "../addon-modules/" + m_name + "/config/" + m_name + ".ini");
+            m_log.InfoFormat("[{0}]: Loading from config file {1}", m_name, moduleConfigFile);
+            try
+            {
+                m_config = new IniConfigSource(moduleConfigFile);
+            }
+            catch (Exception)
+            {
+                m_log.InfoFormat("[{0}]: No module config file '{1}' was found! Tide in this region is set to Disabled", m_name, moduleConfigFile);
+                m_enabled = false;
+                m_config = null;
+                return;
+            }
+            IConfig cnf = m_config.Configs[scene.RegionInfo.RegionName];
+
+            if (cnf == null)
+            {
+                m_log.InfoFormat("[{0}]: No region section [{1}] found in config file {2}. Tide in this region is set to Disabled", m_name, scene.RegionInfo.RegionName, moduleConfigFile);
+                m_enabled = false;
+                return;
+            }
+
+            m_enabled = cnf.GetBoolean("BirdsEnabled", false);
+
             if (m_enabled)
             {
+                m_chatChannel = cnf.GetInt("BirdsChatChannel", 118);
+                m_birdPrim = cnf.GetString("BirdsPrim", "birdPrim");
+                m_flockSize = cnf.GetInt("BirdsFlockSize", 100);
+                m_maxSpeed = cnf.GetFloat("BirdsMaxSpeed", 3f);
+                m_maxForce = cnf.GetFloat("BirdsMaxForce", 0.25f);
+                m_neighbourDistance = cnf.GetFloat("BirdsNeighbourDistance", 25f);
+                m_desiredSeparation = cnf.GetFloat("BirdsDesiredSeparation", 20f);
+                m_tolerance = cnf.GetFloat("BirdsTolerance", 5f);
+                m_borderSize = cnf.GetFloat("BirdsRegionBorderSize", 5f);
+                m_maxHeight = cnf.GetInt("BirdsMaxHeight", 256);
+
+                m_log.InfoFormat("[{0}] Enabled on channel {1} with Flock Size {2}", m_name, m_chatChannel, m_flockSize);
+
                 //register commands
                 RegisterCommands();
 
@@ -121,7 +141,9 @@ namespace Flocking
                 // init module
                 m_model = new FlockingModel(m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance, m_borderSize);
                 m_view = new FlockingView(scene);
-                m_view.BoidPrim = m_boidPrim;
+                m_view.BirdPrim = m_birdPrim;
+                m_frame = 0;
+                m_scene = scene;
              }
 		}
 
@@ -147,7 +169,8 @@ namespace Flocking
 
 		public void RemoveRegion (Scene scene)
 		{
-			if (m_enabled) {
+            m_log.InfoFormat("[{0}]: Removing region '{1}' from this module", m_name, scene.RegionInfo.RegionName);
+            if (m_enabled) {
                 m_ready = false;
 				scene.EventManager.OnFrame -= FlockUpdate;
 				scene.EventManager.OnChatFromClient -= SimChatSent;
@@ -164,19 +187,6 @@ namespace Flocking
             }
         }
 
-		public string Name {
-			get { return m_name; }
-		}
-
-		public bool IsSharedModule {
-			get { return false; }
-		}
-
-        public Type ReplaceableInterface
-        {
-            get { return null; }
-        }
-
 		#endregion
 		
 		#region EventHandlers
@@ -187,13 +197,13 @@ namespace Flocking
 				return;
 			}
 			
-			//m_log.InfoFormat("update my boids");
+			//m_log.InfoFormat("update my birds");
 			
 			// work out where everyone has moved to
 			// and tell the scene to render the new positions
 			lock( m_sync ) {
-				List<Boid > boids = m_model.UpdateFlockPos ();
-				m_view.Render (boids);
+				List<Bird > birds = m_model.UpdateFlockPos ();
+				m_view.Render (birds);
 			}
 		}
 		
@@ -244,8 +254,8 @@ namespace Flocking
 			AddCommand ("start", "", "Start Flocking", HandleStartCmd);
 			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
 			AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
-			AddCommand ("prim", "name", "set the prim used for each boid to that passed in", HandleSetPrimCmd);
-			AddCommand ("framerate", "num", "[debugging] only update boids every <num> frames", HandleSetFrameRateCmd);
+			AddCommand ("prim", "name", "set the prim used for each bird to that passed in", HandleSetPrimCmd);
+			AddCommand ("framerate", "num", "[debugging] only update birds every <num> frames", HandleSetFrameRateCmd);
 		}
 		
 		private bool ShouldHandleCmd ()
@@ -268,7 +278,7 @@ namespace Flocking
 			if (inWorld) {
 				IClientAPI ownerAPI = null;
 				if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
-					ownerAPI.SendBlueBoxMessage (m_owner, "Boids", response);
+					ownerAPI.SendBlueBoxMessage (m_owner, "Birds", response);
 				}
 			} else {
 				MainConsole.Instance.Output (response);
@@ -316,7 +326,7 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				bool inWorld = IsInWorldCmd (ref args);
-				ShowResponse ("Num Boids = " + m_model.Size, inWorld);
+				ShowResponse ("Num Birds = " + m_model.Size, inWorld);
 			}
 		}
 		
@@ -325,7 +335,7 @@ namespace Flocking
 			if (ShouldHandleCmd ()) {
 				string primName = args[1];
 				lock(m_sync) {
-					m_view.BoidPrim = primName;
+					m_view.BirdPrim = primName;
 					m_view.Clear();
 				}
 			}
