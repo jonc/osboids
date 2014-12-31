@@ -64,11 +64,13 @@ Runtime Commands
 The following commands, which can either be issued on the Console, or via a chat channel in-world, control the behaviour
 of the flock at runtime
 
-	flock-stop or /118 stop                       ;stop all flocking and remove birds from the region
-	flock-start or /118 start                     ;start the flocking simulation
-	flock-size <num> or /118 size <num>	          ;change the size of the flock
-	flock-prim <name> or /118 prim <name>	        ;change the bird prim to one already rezzed in the scene
-	flock-framerate <num> or /118 framerate <num> ;only update the flock positions every <num> frames
+	birds-stop or /118 stop                       ;stop all birds flocking 
+	birds-start or /118 start                     ;start all birds flocking
+	birds-enable or /118 enable                   ;enable the flocking simulation if disabled
+	birds-disable or /118 disable                 ;stop all birds and remove them from the scene
+	birds-size <num> or /118 size <num>           ;change the size of the flock
+	birds-prim <name> or /118 prim <name>         ;change the bird prim to one already rezzed in the scene
+	birds-framerate <num> or /118 framerate <num> ;only update the flock positions every <num> frames
 	                                              ;only really useful for photography and debugging bird
 	                                              ;behaviour
 
