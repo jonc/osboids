@@ -220,17 +220,21 @@ namespace Flocking
 			string[] args = (cmd + " <ui>").Split (" ".ToCharArray ());
 			
 			if (cmd.StartsWith ("stop")) {
-				HandleStopCmd ("flock", args);
+				HandleStopCmd (m_name, args);
 			} else if (cmd.StartsWith ("start")) {
-				HandleStartCmd ("flock", args);
+				HandleStartCmd (m_name, args);
+            } else if (cmd.StartsWith("enable")) {
+                HandleEnableCmd(m_name, args);
+            } else if (cmd.StartsWith("disable")) {
+                HandleDisableCmd(m_name, args);
 			} else if (cmd.StartsWith ("size")) {
-				HandleSetSizeCmd ("flock", args);
+				HandleSetSizeCmd (m_name, args);
 			} else if (cmd.StartsWith ("stats")) {
-				HandleShowStatsCmd ("flock", args);
+				HandleShowStatsCmd (m_name, args);
 			} else if (cmd.StartsWith ("prim")) {
-				HandleSetPrimCmd ("flock", args);
+				HandleSetPrimCmd (m_name, args);
 			} else if (cmd.StartsWith ("framerate")) {
-				HandleSetFrameRateCmd ("flock", args);
+				HandleSetFrameRateCmd (m_name, args);
 			}
 			
 		}
@@ -264,24 +268,19 @@ namespace Flocking
 		
 		private bool ShouldHandleCmd ()
 		{
-            if (!(m_console.ConsoleScene == null || m_console.ConsoleScene == m_scene))
-            {
-                m_log.InfoFormat("[{0}]: Command Ignored!", m_name);
+            if (!(m_console.ConsoleScene == null || m_console.ConsoleScene == m_scene)) {
                 return false;
-            } else {
-                m_log.InfoFormat("[{0}]: Command Executed!", m_name);
-                return true;
             }
-		}
+            return true;
+    	}
 		
 		private bool IsInWorldCmd (ref string [] args)
 		{
-			bool retVal = false;
-			
 			if (args.Length > 0 && args [args.Length - 1].Equals ("<ui>")) {
-				retVal = true;	
+                m_log.InfoFormat("[{0}]: Inworld command detected in region {1}", m_name, m_scene.RegionInfo.RegionName);
+                return true;	
 			}
-			return retVal;
+            return false;
 		}
 		
 		private void ShowResponse (string response, bool inWorld)
@@ -311,7 +310,6 @@ namespace Flocking
             if (!m_ready && ShouldHandleCmd())
             {
                 m_log.InfoFormat("[{0}]: Bird flocking is enabled.", m_name);
-                FlockInitialise();
                 m_enabled = true;
                 m_ready = true;
             }

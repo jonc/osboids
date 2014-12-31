@@ -65,9 +65,11 @@ namespace Flocking
             foreach (string name in m_sogMap.Keys)
             {
                 m_log.InfoFormat("[{0}]: Removing prim {1} from region {2}", m_name, name, m_scene.RegionInfo.RegionName);
-                RemoveSOGFromScene(name);
+                SceneObjectGroup sog = m_sogMap[name];
+                m_scene.DeleteSceneObject(sog, false);
             }
             m_sogMap.Clear();
+            m_scene.ForceClientUpdate();
  		}
 
 		public void Render (List<Bird> birds)
@@ -96,6 +98,7 @@ namespace Flocking
 				m_scene.AddNewSceneObject (sog, false);
 			} else {
 				sog = existing.ParentGroup;
+                m_sogMap[bird.Id] = sog;
                 rootPart = sog.RootPart;
                 //set prim to phantom
                 sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
@@ -161,14 +164,6 @@ namespace Flocking
 
 			return prim;
 		}
-
-        private void RemoveSOGFromScene(string sogName)
-        {
-            SceneObjectGroup sog = m_sogMap[sogName];
-            m_scene.DeleteSceneObject(sog, false);
-
-        }
-
 
 	}
 }
