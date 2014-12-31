@@ -1,6 +1,7 @@
 INonSharedRegion Module -  ability to control flocks of prims within an OpenSim scene.
 
-***This module is currently broken, removing prims from the scene on disable does not work****
+***Bugs:
+***	Inworld commands only work if the console region is changed to the current region
 
 
 To build from source
@@ -12,7 +13,7 @@ then xbuild, or build within Visual Studio / Monodevelop to produce the binaries
 Remember you need an .ini file in bin/addon-modules/OpenSimBirds/config/
 
 OpenSimBirds has no external dependencies other than the dlls currently included in opensim.
-The project generates a single dll - OpenSimBirds.Modules.dll which is copied into opensim/bin as part of the build step
+The project generates a single dll - OpenSimBirds.Module.dll which is copied into opensim/bin as part of the build step
 
 
 Configuration
@@ -52,9 +53,9 @@ Here is an example config:
 
 
 Various runtime commands control the flocking module behaviour - described below. These can either be invoked
-from the Console or in world by directing them to a chat channel. To specify which channel to use:
+from the Console or in world by directing them to a chat channel. You can specify which channel to use in the .ini:
 
-	chat-channel = 118 	the chat channel to listen for Bird commands on
+		BirdsChatChannel = 118 	the chat channel to listen for Bird commands on
 
 
 
