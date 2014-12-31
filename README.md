@@ -1,4 +1,6 @@
-INonSharedRegion Module -  ability to control flocks of prims within an OpenSim scene
+INonSharedRegion Module -  ability to control flocks of prims within an OpenSim scene.
+
+***This module is currently broken, removing prims from the scene on disable does not work****
 
 
 To build from source
@@ -6,7 +8,8 @@ To build from source
 Add OpenSimBirds source tree under opensim/addon-modules
 
 ./runprebuild.sh against opensim root to build this module into the solution
-then xbuild, or build within Visual Studio / Monodevelop to produce the binaries
+then xbuild, or build within Visual Studio / Monodevelop to produce the binaries.
+Remember you need an .ini file in bin/addon-modules/OpenSimBirds/config/
 
 OpenSimBirds has no external dependencies other than the dlls currently included in opensim.
 The project generates a single dll - OpenSimBirds.Modules.dll which is copied into opensim/bin as part of the build step
@@ -19,12 +22,13 @@ If you are running multiple regions on one simulator you can have different Bird
 settings per region in the configuration file, in the exact same way you can
 customize per Region setting in Regions.ini
 
-The configuration file for this module is in:
+The configuration file for this module should be placed in:
 
-addon-modules/OpenSimBirds/config/OpenSimBirds.ini
+bin/addon-modules/OpenSimBirds/config/OpenSimBirds.ini
 
-and follows the same format as a Regions.ini file, where you specify setting for
-each region using the [Region Name] section heading.
+and follows the similar format as a Regions.ini file, where you specify setting for
+each region using the [Region Name] section heading. There is an example .ini file
+provided which should be edited and copied to the correct place above.
 
 Here is an example config:
 
@@ -76,22 +80,10 @@ throw the constituent parts of a 200 linked prim dragon.
 Tests show that <= 500 single prims can be flocked effectively - depending on system and network	
 However maybe <= 300 simple linksets can perform as well.
 
-I intend to allow inventory items and UUIDs to represent the birds - this is not written yet however.
-
 
 Please Note 
 
-This module is currently only tested against opensim master. If it is found to work against a stable release, 
-then that behaviour ought to be considered as a bug - which I will attempt to fix in the next git push.
-
-
-
-Next Steps 
-
-I want to improve the ability of the birds to avoid obstacles within the scene. Current avoidance is pretty basic, and
-only functions correctly about fifty percent of the time. Need to improve this without increasing computational cost.
-
-
+This module is currently only tested against opensim master. 
 
 Licence: all files released under a BSD licence
 If you have any question please contact Jak Daniels, jak@ateb.co.uk

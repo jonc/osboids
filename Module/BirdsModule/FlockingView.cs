@@ -30,20 +30,24 @@ using System.Collections.Generic;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
+using log4net;
 
 namespace Flocking
 {
 	public class FlockingView
 	{
-		private Scene m_scene;
+        private static readonly ILog m_log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private Scene m_scene;
 		private UUID m_owner;
+        private String m_name;
 		private String m_birdPrim;
 		
 		private Dictionary<string, SceneObjectGroup> m_sogMap = new Dictionary<string, SceneObjectGroup> ();
 				
-		public FlockingView (Scene scene)
+		public FlockingView (String moduleName, Scene scene)
 		{
-			m_scene = scene;	
+            m_name = moduleName;
+            m_scene = scene;	
 		}
 		
 		public void PostInitialize (UUID owner)
@@ -60,6 +64,7 @@ namespace Flocking
             //trash everything we have
             foreach (string name in m_sogMap.Keys)
             {
+                m_log.InfoFormat("[{0}]: Removing prim {1} from region {2}", m_name, name, m_scene.RegionInfo.RegionName);
                 RemoveSOGFromScene(name);
             }
             m_sogMap.Clear();
@@ -78,17 +83,31 @@ namespace Flocking
 
 
 			SceneObjectGroup sog;
+            SceneObjectPart rootPart;
+
 			if (existing == null) {
 				SceneObjectGroup group = findByName (m_birdPrim);
 				sog = CopyPrim (group, bird.Id);
+                rootPart = sog.RootPart;
+                //set prim to phantom
+                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 				m_sogMap [bird.Id] = sog;
+                m_log.InfoFormat("[{0}]: Adding prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
 				m_scene.AddNewSceneObject (sog, false);
 			} else {
 				sog = existing.ParentGroup;
+                rootPart = sog.RootPart;
+                //set prim to phantom
+                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 			}
 			
 			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, bird.Location);
 			sog.UpdateGroupRotationPR( bird.Location, rotation);
+
+            // Fire script on_rez
+            sog.CreateScriptInstances(0, true, m_scene.DefaultScriptEngine, 1);
+            rootPart.ParentGroup.ResumeScripts();
+            rootPart.ScheduleFullUpdate();
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)
@@ -133,7 +152,7 @@ namespace Flocking
 		private SceneObjectGroup MakeDefaultPrim (string name)
 		{
 			PrimitiveBaseShape shape = PrimitiveBaseShape.CreateSphere ();
-			shape.Scale = new Vector3 (0.5f, 0.5f, 0.5f);
+  			shape.Scale = new Vector3 (0.5f, 0.5f, 0.5f);
 
             SceneObjectGroup prim = new SceneObjectGroup(m_owner, new Vector3((float)m_scene.RegionInfo.RegionSizeX / 2, (float)m_scene.RegionInfo.RegionSizeY / 2, 25f), shape);
 			prim.Name = name;

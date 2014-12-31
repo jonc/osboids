@@ -41,6 +41,7 @@ namespace Flocking
 		private float m_desiredSeparation;
 		private float m_tolerance;
         private float m_border;
+        private string m_name;
 		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
@@ -50,13 +51,14 @@ namespace Flocking
 				if( value < m_flock.Count ) {
 					m_flock.RemoveRange( 0, m_flock.Count - value );
 				} else while( value > m_flock.Count ) {
-					AddBird( "Bird"+m_flock.Count);	
+					AddBird(m_name + m_flock.Count);	
 				}
 			}
 		}
 		
-		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance, float border) {
-			m_maxSpeed = maxSpeed;
+		public FlockingModel(string moduleName, float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance, float border) {
+            m_name = moduleName;
+            m_maxSpeed = maxSpeed;
 			m_maxForce = maxForce;
 			m_neighbourDistance = neighbourDistance;
 			m_desiredSeparation = desiredSeparation;
