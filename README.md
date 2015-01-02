@@ -1,9 +1,5 @@
 INonSharedRegion Module -  ability to control flocks of prims within an OpenSim scene.
 
-***Bugs:
-***	Inworld commands only work if the console region is changed to the current region
-
-
 To build from source
 
 Add OpenSimBirds source tree under opensim/addon-modules
