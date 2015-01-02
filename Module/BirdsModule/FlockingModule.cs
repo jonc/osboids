@@ -63,7 +63,8 @@ namespace Flocking
 		private int m_frameUpdateRate = 1;
 		private int m_chatChannel = 118;
 		private string m_birdPrim;
-		private int m_flockSize = 100;
+		private int m_flockSize = 50;
+        private int m_maxFlockSize = 100;
 		private float m_maxSpeed;
 		private float m_maxForce;
 		private float m_neighbourDistance;
@@ -107,7 +108,8 @@ namespace Flocking
             {
                 m_chatChannel = cnf.GetInt("BirdsChatChannel", 118);
                 m_birdPrim = cnf.GetString("BirdsPrim", "birdPrim");
-                m_flockSize = cnf.GetInt("BirdsFlockSize", 100);
+                m_flockSize = cnf.GetInt("BirdsFlockSize", 50);
+                m_maxFlockSize = cnf.GetInt("BirdsMaxFlockSize", 100);
                 m_maxSpeed = cnf.GetFloat("BirdsMaxSpeed", 3f);
                 m_maxForce = cnf.GetFloat("BirdsMaxForce", 0.25f);
                 m_neighbourDistance = cnf.GetFloat("BirdsNeighbourDistance", 25f);
@@ -349,6 +351,7 @@ namespace Flocking
 			if (ShouldHandleCmd ()) {
 				lock( m_sync ) {
 					int newSize = Convert.ToInt32(args[1]);
+                    if (newSize > m_maxFlockSize) newSize = m_maxFlockSize;
 					m_model.Size = newSize;
                     m_log.InfoFormat("[{0}]: Bird flock size is set to {1} in region {2}.", m_name, newSize, m_scene.RegionInfo.RegionName);
 					m_view.Clear();

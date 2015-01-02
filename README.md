@@ -34,7 +34,8 @@ Here is an example config:
 	[Test Region 1]
 
 		BirdsEnabled = True         ;set to false to disable the module in this region	
-		BirdsFlockSize = 100        ;the number of birds to flock
+		BirdsFlockSize = 50         ;the number of birds to flock
+		BirdsMaxFlockSize = 100     ;the maximum flock size that can be created (keeps things sane)
 		BirdsMaxSpeed = 3           ;how far each bird can travel per update
 		BirdsMaxForce = 0.25        ;the maximum acceleration allowed to the current velocity of the bird
 		BirdsNeighbourDistance = 25 ;max distance for other birds to be considered in the same flock as us
@@ -42,6 +43,7 @@ Here is an example config:
 		BirdsTolerance = 5          ;how close to the edges of things can we get without being worried
 		BirdsBorderSize = 5         ;how close to the edge of a region can we get?
 		BirdsMaxHeight = 256        ;how high are we allowed to flock
+		BirdsUpdateEveryNFrames = 1 ;update bird positions every N simulator frames
 		BirdsPrim = seagull01       ;By default the module will create a flock of plain wooden spheres, 
 		                            ;however this can be overridden to the name of an existing prim that
 		                            ;needs to already exist in the scene - i.e. be rezzed in the region.	
