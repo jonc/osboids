@@ -88,30 +88,28 @@ namespace Flocking
             SceneObjectPart rootPart;
 
 			if (existing == null) {
-				SceneObjectGroup group = findByName (m_birdPrim);
+                m_log.InfoFormat("[{0}]: Adding prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
+                SceneObjectGroup group = findByName (m_birdPrim);
 				sog = CopyPrim (group, bird.Id);
                 rootPart = sog.RootPart;
                 //set prim to phantom
                 sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 				m_sogMap [bird.Id] = sog;
-                m_log.InfoFormat("[{0}]: Adding prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
 				m_scene.AddNewSceneObject (sog, false);
+                // Fire script on_rez
+                sog.CreateScriptInstances(0, true, m_scene.DefaultScriptEngine, 1);
+                rootPart.ParentGroup.ResumeScripts();
+                rootPart.ScheduleFullUpdate();
 			} else {
 				sog = existing.ParentGroup;
                 m_sogMap[bird.Id] = sog;
-                //m_log.InfoFormat("[{0}]: Reusing prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
-                rootPart = sog.RootPart;
+                //rootPart = sog.RootPart;
                 //set prim to phantom
-                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
+                //sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 			}
 			
 			Quaternion rotation = CalcRotationToEndpoint (sog, sog.AbsolutePosition, bird.Location);
 			sog.UpdateGroupRotationPR( bird.Location, rotation);
-
-            // Fire script on_rez
-            sog.CreateScriptInstances(0, true, m_scene.DefaultScriptEngine, 1);
-            rootPart.ParentGroup.ResumeScripts();
-            rootPart.ScheduleFullUpdate();
 		}
 		
 		private static Quaternion CalcRotationToEndpoint (SceneObjectGroup copy, Vector3 sv, Vector3 ev)

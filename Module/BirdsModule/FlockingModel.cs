@@ -111,7 +111,7 @@ namespace Flocking
 		{
 			m_flowMap = flowMap;			
   			for (int i = 0; i < num; i++) {
-				AddBird ("Bird"+i );
+				AddBird (m_name + i );
   			}
 		}
 
