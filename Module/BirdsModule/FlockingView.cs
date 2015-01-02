@@ -99,6 +99,7 @@ namespace Flocking
 			} else {
 				sog = existing.ParentGroup;
                 m_sogMap[bird.Id] = sog;
+                m_log.InfoFormat("[{0}]: Reusing prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
                 rootPart = sog.RootPart;
                 //set prim to phantom
                 sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);

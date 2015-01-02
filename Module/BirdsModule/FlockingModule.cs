@@ -153,6 +153,7 @@ namespace Flocking
 		{
             m_log.InfoFormat("[{0}]: Removing region '{1}' from this module", m_name, scene.RegionInfo.RegionName);
             if (m_enabled) {
+                m_view.Clear();
                 m_ready = false;
 				scene.EventManager.OnFrame -= FlockUpdate;
 				scene.EventManager.OnChatFromClient -= SimChatSent;
@@ -209,7 +210,7 @@ namespace Flocking
 		
 		protected void SimChatSent (Object x, OSChatMessage msg)
 		{
-			if (m_scene.ConsoleScene () != m_scene || msg.Channel != m_chatChannel)
+			if (msg.Channel != m_chatChannel)
 				return; // not for us
 
 			// try and parse a valid cmd from this msg
@@ -298,7 +299,7 @@ namespace Flocking
         public void HandleDisableCmd(string module, string[] args)
         {
             if (m_ready && ShouldHandleCmd ()) {
-                m_log.InfoFormat("[{0}]: Bird flocking is disabled.", m_name);
+                m_log.InfoFormat("[{0}]: Bird flocking is disabled in region {1}.", m_name, m_scene.RegionInfo.RegionName);
                 m_enabled = false;
                 m_ready = false;
                 m_view.Clear();
@@ -309,7 +310,7 @@ namespace Flocking
         {
             if (!m_ready && ShouldHandleCmd())
             {
-                m_log.InfoFormat("[{0}]: Bird flocking is enabled.", m_name);
+                m_log.InfoFormat("[{0}]: Bird flocking is enabled in region {1}.", m_name, m_scene.RegionInfo.RegionName);
                 m_enabled = true;
                 m_ready = true;
             }
@@ -319,7 +320,7 @@ namespace Flocking
 		{
             if (m_enabled && m_ready && ShouldHandleCmd())
             {
-                m_log.InfoFormat("[{0}]: Bird flocking is stopped.", m_name);
+                m_log.InfoFormat("[{0}]: Bird flocking is stopped in region {1}.", m_name, m_scene.RegionInfo.RegionName);
 				m_enabled = false;
 			}
 		}
@@ -328,7 +329,7 @@ namespace Flocking
         {
             if (!m_enabled && m_ready && ShouldHandleCmd())
             {
-                m_log.InfoFormat("[{0}]: Bird flocking is started.", m_name);
+                m_log.InfoFormat("[{0}]: Bird flocking is started in region {1}.", m_name, m_scene.RegionInfo.RegionName);
                 m_enabled = true;
                 FlockUpdate();
             }
@@ -339,6 +340,7 @@ namespace Flocking
 			if (ShouldHandleCmd ()) {
 				int frameRate = Convert.ToInt32( args[1] );
 				m_frameUpdateRate = frameRate;
+                m_log.InfoFormat("[{0}]: Bird updates set to every {1} frames in region {2}.", m_name, frameRate, m_scene.RegionInfo.RegionName);
 			}
 		}
 
@@ -348,6 +350,7 @@ namespace Flocking
 				lock( m_sync ) {
 					int newSize = Convert.ToInt32(args[1]);
 					m_model.Size = newSize;
+                    m_log.InfoFormat("[{0}]: Bird flock size is set to {1} in region {2}.", m_name, newSize, m_scene.RegionInfo.RegionName);
 					m_view.Clear();
 				}
 			}
@@ -367,6 +370,7 @@ namespace Flocking
 				string primName = args[1];
 				lock(m_sync) {
 					m_view.BirdPrim = primName;
+                    m_log.InfoFormat("[{0}]: Bird prim is set to {1} in region {2}.", m_name, primName, m_scene.RegionInfo.RegionName);
 					m_view.Clear();
 				}
 			}
