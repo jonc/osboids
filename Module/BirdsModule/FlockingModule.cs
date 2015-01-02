@@ -130,6 +130,7 @@ namespace Flocking
                 //register handlers
                 m_scene.EventManager.OnFrame += FlockUpdate;
                 m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
+                m_scene.EventManager.OnChatFromWorld += SimChatSent;
 
                 // init module
                 m_model = new FlockingModel(m_name, m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance, m_borderSize);
@@ -159,6 +160,7 @@ namespace Flocking
                 m_ready = false;
 				scene.EventManager.OnFrame -= FlockUpdate;
 				scene.EventManager.OnChatFromClient -= SimChatSent;
+                scene.EventManager.OnChatFromWorld -= SimChatSent;
 			}
 		}
 
@@ -169,6 +171,7 @@ namespace Flocking
                 m_ready = false;
                 m_scene.EventManager.OnFrame -= FlockUpdate;
                 m_scene.EventManager.OnChatFromClient -= SimChatSent;
+                m_scene.EventManager.OnChatFromWorld -= SimChatSent;
             }
         }
 
