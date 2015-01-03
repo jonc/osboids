@@ -29,7 +29,7 @@ provided which should be edited and copied to the correct place above.
 
 Here is an example config:
 
-;; Set the Birds settings per named region
+	;; Set the Birds settings per named region
 
 	[Test Region 1]
 
@@ -51,7 +51,8 @@ Here is an example config:
 
 
 Various runtime commands control the flocking module behaviour - described below. These can either be invoked
-from the Console or in world by directing them to a chat channel. You can specify which channel to use in the .ini:
+from the Console or in world by directing them to a chat channel either from the client's Local Chat or via a script.
+You can specify which channel to use in the .ini:
 
 		BirdsChatChannel = 118 	the chat channel to listen for Bird commands on
 
@@ -59,18 +60,31 @@ from the Console or in world by directing them to a chat channel. You can specif
 
 Runtime Commands
 
-The following commands, which can either be issued on the Console, or via a chat channel in-world, control the behaviour
-of the flock at runtime
+The following commands, which can be issued on the Console or via in-world chat or scripted chat on the BirdsChatChannel
+to control the birds at runtime:
 
-	birds-stop or /118 stop                       ;stop all birds flocking 
-	birds-start or /118 start                     ;start all birds flocking
-	birds-enable or /118 enable                   ;enable the flocking simulation if disabled
-	birds-disable or /118 disable                 ;stop all birds and remove them from the scene
-	birds-size <num> or /118 size <num>           ;change the size of the flock
-	birds-prim <name> or /118 prim <name>         ;change the bird prim to one already rezzed in the scene
-	birds-framerate <num> or /118 framerate <num> ;only update the flock positions every <num> frames
-	                                              ;only really useful for photography and debugging bird
-	                                              ;behaviour
+	birds-stop or /118 stop                         ;stop all birds flocking 
+	birds-start or /118 start                       ;start all birds flocking
+	birds-enable or /118 enable                     ;enable the flocking simulation if disabled
+	birds-disable or /118 disable                   ;stop all birds and remove them from the scene
+	birds-prim <name> or /118 prim <name>           ;change the bird prim to a prim already rezzed in the scene
+	birds-stats or /118 stats                       ;show some statistics (needs work)
+	birds-framerate <num> or /118 framerate <num>   ;only update the flock positions every <num> frames
+	                                                ;only really useful for photography and debugging bird
+	                                                ;behaviour
+
+
+These commands are great for playing with the flock dynamics in real time:
+
+	birds-size <num> or /118 size <num>             ;change the size of the flock
+	birds-speed <num> or /118 speed <num>           ;change the maximum velocity each bird may achieve
+	birds-force <num> or /118 force <num>           ;change the maximum force each bird may accelerate
+	birds-distance <num> or /118 distance <num>     ;change the maximum distance that other birds are to be considered in the same flock as us
+	birds-separation <num> or /118 separation <num> ;sets how far away from other birds we would like to stay
+	birds-tolerance <num> or /118 tolerance <num>   ;sets how close to the edges of things can we get without being worried
+
+Of course if distance is less than separation then the birds will never flock. The other way around and they will always
+eventually form one or more flocks.
 
 Bird prims
 

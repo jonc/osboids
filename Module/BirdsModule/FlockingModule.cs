@@ -265,6 +265,16 @@ namespace Flocking
 				HandleShowStatsCmd (m_name, args);
 			} else if (cmd.StartsWith ("prim")) {
 				HandleSetPrimCmd (m_name, args);
+            } else if (cmd.StartsWith("speed")) {
+                HandleSetMaxSpeedCmd(m_name, args);
+            } else if (cmd.StartsWith("force")) {
+                HandleSetMaxForceCmd(m_name, args);
+            } else if (cmd.StartsWith("distance")) {
+                HandleSetNeighbourDistanceCmd(m_name, args);
+            } else if (cmd.StartsWith("separation")) {
+                HandleSetDesiredSeparationCmd(m_name, args);
+            } else if (cmd.StartsWith("tolerance")) {
+                HandleSetToleranceCmd(m_name, args);
 			} else if (cmd.StartsWith ("framerate")) {
 				HandleSetFrameRateCmd (m_name, args);
 			}
@@ -293,10 +303,15 @@ namespace Flocking
             AddCommand ("enable", "", "Enable Birds Flocking", HandleEnableCmd);
             AddCommand ("disable", "", "Disable Birds Flocking", HandleDisableCmd);
 			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
-			AddCommand ("stats", "", "show flocking stats", HandleShowStatsCmd);
-			AddCommand ("prim", "name", "set the prim used for each bird to that passed in", HandleSetPrimCmd);
-			AddCommand ("framerate", "num", "[debugging] only update birds every <num> frames", HandleSetFrameRateCmd);
-		}
+			AddCommand ("stats", "", "Show flocking stats", HandleShowStatsCmd);
+			AddCommand ("prim", "name", "Set the prim used for each bird to that passed in", HandleSetPrimCmd);
+            AddCommand ("speed", "num", "Set the maximum velocity each bird may achieve", HandleSetMaxSpeedCmd);
+            AddCommand("force", "num", "Set the maximum force each bird may accelerate", HandleSetMaxForceCmd);
+            AddCommand("distance", "num", "Set the maximum distance that other birds are to be considered in the same flock as us", HandleSetNeighbourDistanceCmd);
+            AddCommand("separation", "num", "How far away from other birds we would like to stay", HandleSetDesiredSeparationCmd);
+            AddCommand("tolerance", "num", "How close to the edges of things can we get without being worried", HandleSetToleranceCmd);
+            AddCommand("framerate", "num", "[debugging] only update birds every <num> frames", HandleSetFrameRateCmd);
+        }
 		
 		private bool ShouldHandleCmd ()
 		{
@@ -408,6 +423,71 @@ namespace Flocking
 				}
 			}
 		}
+
+        public void HandleSetMaxSpeedCmd(string module, string[] args)
+        {
+            if (ShouldHandleCmd())
+            {
+                float maxSpeed = (float)Convert.ToDecimal(args[1]);
+                lock (m_sync)
+                {
+                    m_model.MaxSpeed = maxSpeed;
+                    m_log.InfoFormat("[{0}]: Birds maximum speed is set to {1} in region {2}.", m_name, maxSpeed, m_scene.RegionInfo.RegionName);
+                }
+            }
+        }
+
+        public void HandleSetMaxForceCmd(string module, string[] args)
+        {
+            if (ShouldHandleCmd())
+            {
+                float maxForce = (float)Convert.ToDecimal(args[1]);
+                lock (m_sync)
+                {
+                    m_model.MaxForce = maxForce;
+                    m_log.InfoFormat("[{0}]: Birds maximum force is set to {1} in region {2}.", m_name, maxForce, m_scene.RegionInfo.RegionName);
+                }
+            }
+        }
+
+        public void HandleSetNeighbourDistanceCmd(string module, string[] args)
+        {
+            if (ShouldHandleCmd())
+            {
+                float neighbourDistance = (float)Convert.ToDecimal(args[1]);
+                lock (m_sync)
+                {
+                    m_model.NeighbourDistance = neighbourDistance;
+                    m_log.InfoFormat("[{0}]: Birds neighbour distance is set to {1} in region {2}.", m_name, neighbourDistance, m_scene.RegionInfo.RegionName);
+                }
+            }
+        }
+
+        public void HandleSetDesiredSeparationCmd(string module, string[] args)
+        {
+            if (ShouldHandleCmd())
+            {
+                float desiredSeparation = (float)Convert.ToDecimal(args[1]);
+                lock (m_sync)
+                {
+                    m_model.DesiredSeparation = desiredSeparation;
+                    m_log.InfoFormat("[{0}]: Birds desired separation is set to {1} in region {2}.", m_name, desiredSeparation, m_scene.RegionInfo.RegionName);
+                }
+            }
+        }
+
+        public void HandleSetToleranceCmd(string module, string[] args)
+        {
+            if (ShouldHandleCmd())
+            {
+                float tolerance = (float)Convert.ToDecimal(args[1]);
+                lock (m_sync)
+                {
+                    m_model.Tolerance = tolerance;
+                    m_log.InfoFormat("[{0}]: Birds tolerance is set to {1} in region {2}.", m_name, tolerance, m_scene.RegionInfo.RegionName);
+                }
+            }
+        }
 
 		#endregion
 

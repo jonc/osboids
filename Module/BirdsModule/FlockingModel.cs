@@ -90,22 +90,27 @@ namespace Flocking
 						
 		public float MaxSpeed {
 			get {return m_maxSpeed;}
+            set { m_maxSpeed = value; }
 		}
 				
 		public float MaxForce {
 			get {return m_maxForce;}
+            set { m_maxForce = value; }
 		}
 
 		public float NeighbourDistance {
 			get {return m_neighbourDistance;}
+            set { m_neighbourDistance = value; }
 		}
 				
 		public float DesiredSeparation {
 			get {return m_desiredSeparation;}
+            set { m_desiredSeparation = value; }
 		}
 				
 		public float Tolerance {
 			get {return m_tolerance;}
+            set { m_tolerance = value; }
 		}
 				
 
