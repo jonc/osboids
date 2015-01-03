@@ -219,7 +219,7 @@ namespace Flocking
 				return; // not for us
 
 			// try and parse a valid cmd from this msg
-			string cmd = msg.Message.ToLower ();
+			string cmd = msg.Message; //.ToLower ();
 			
 			//stick ui in the args so we know to respond in world
 			//bit of a hack - but lets us use CommandDelegate inWorld
