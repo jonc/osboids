@@ -54,7 +54,7 @@ Various runtime commands control the flocking module behaviour - described below
 from the Console or in world by directing them to a chat channel either from the client's Local Chat or via a script.
 You can specify which channel to use in the .ini:
 
-		BirdsChatChannel = 118 	the chat channel to listen for Bird commands on
+		BirdsChatChannel = 118      ;the chat channel to listen for Bird commands on
 
 
 
