@@ -72,7 +72,7 @@ namespace Flocking
             m_scene.ForceClientUpdate();
  		}
 
-		public void Render (List<Bird> birds)
+        public void Render(List<Bird> birds)
 		{
 			foreach (Bird bird in birds) {
 				DrawBird (bird);
@@ -93,7 +93,7 @@ namespace Flocking
 				sog = CopyPrim (group, bird.Id);
                 rootPart = sog.RootPart;
                 //set prim to phantom
-                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
+                sog.UpdatePrimFlags(rootPart.LocalId, false, true, true, false);
 				m_sogMap [bird.Id] = sog;
 				m_scene.AddNewSceneObject (sog, false);
                 // Fire script on_rez

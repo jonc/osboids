@@ -145,8 +145,8 @@ namespace Flocking
 
 		public void RegionLoaded (Scene scene)
 		{
-            //m_scene = scene;
-            if (m_enabled) {
+            if (m_enabled)
+            {
                 // Mark Module Ready for duty
 				m_ready = true;
 			}            
@@ -355,9 +355,10 @@ namespace Flocking
 				lock( m_sync ) {
 					int newSize = Convert.ToInt32(args[1]);
                     if (newSize > m_maxFlockSize) newSize = m_maxFlockSize;
-					m_model.Size = newSize;
+                    m_view.Clear();
+                    m_model.Size = newSize;
                     m_log.InfoFormat("[{0}]: Bird flock size is set to {1} in region {2}.", m_name, newSize, m_scene.RegionInfo.RegionName);
-					m_view.Clear();
+					
 				}
 			}
 		}

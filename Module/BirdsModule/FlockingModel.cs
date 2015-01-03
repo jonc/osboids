@@ -48,9 +48,11 @@ namespace Flocking
 		public int Size {
 			get {return m_flock.Count;}
 			set {
-				if( value < m_flock.Count ) {
-					m_flock.RemoveRange( 0, m_flock.Count - value );
-				} else while( value > m_flock.Count ) {
+				//if( value < m_flock.Count ) {
+				//	m_flock.RemoveRange( 0, m_flock.Count - value );
+				//} else
+                m_flock = new List<Bird>();
+                while( value > m_flock.Count ) {
 					AddBird(m_name + m_flock.Count);	
 				}
 			}

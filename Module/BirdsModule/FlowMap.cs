@@ -182,9 +182,12 @@ namespace Flocking
 		
 		public bool IsWithinObstacle( int x, int y, int z ) {
 			bool retVal = false;
-			if( x >= LengthX || y >= LengthY || z >= LengthZ ) {
+            if (x >= LengthX || y >= LengthY || z >= LengthZ)
+            {
 				retVal = true;
-			} else if( x < 0 || y < 0 || z < 0 ) {
+            }
+            else if (x < 0 || y < 0 || z < 0)
+            {
 				retVal = true;
 			} else if (m_flowMap[x,y,z] > 50f) {
 				retVal = true;
