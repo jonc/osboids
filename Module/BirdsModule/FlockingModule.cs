@@ -92,7 +92,7 @@ namespace Flocking
 
 		public void AddRegion (Scene scene)
 		{
-            m_log.InfoFormat("[{0}]: Adding region '{1}' to this module", m_name, scene.RegionInfo.RegionName);
+            m_log.InfoFormat("[{0}]: Adding region {1} to this module", m_name, scene.RegionInfo.RegionName);
             IConfig cnf = m_config.Configs[scene.RegionInfo.RegionName];
 
             if (cnf == null)
@@ -131,6 +131,7 @@ namespace Flocking
                 m_scene.EventManager.OnFrame += FlockUpdate;
                 m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
                 m_scene.EventManager.OnChatFromWorld += SimChatSent;
+                m_scene.EventManager.OnPrimsLoaded  += PrimsLoaded;
 
                 // init module
                 m_model = new FlockingModel(m_name, m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance, m_borderSize);
@@ -152,9 +153,15 @@ namespace Flocking
 			}            
 		}
 
+        public void PrimsLoaded(Scene scene)
+        {
+            m_scene = scene;
+            ClearPersisted();
+        }
+
 		public void RemoveRegion (Scene scene)
 		{
-            m_log.InfoFormat("[{0}]: Removing region '{1}' from this module", m_name, scene.RegionInfo.RegionName);
+            m_log.InfoFormat("[{0}]: Removing region {1} from this module", m_name, scene.RegionInfo.RegionName);
             if (m_enabled) {
                 m_view.Clear();
                 m_ready = false;
@@ -191,6 +198,25 @@ namespace Flocking
             // who is the owner for the flock in this region
             m_owner = m_scene.RegionInfo.EstateSettings.EstateOwner;
             m_view.PostInitialize(m_owner);
+        }
+
+        public void ClearPersisted()
+        {
+            //really trash all possible birds that may have been persisted at last shutdown
+            int i;
+            for (i = m_flockSize; i < m_maxFlockSize; i++)
+            {
+                foreach (EntityBase e in m_scene.GetEntities())
+                {
+                    if (e.Name == (string)(m_name + i))
+                    {
+                        m_log.InfoFormat("[{0}]: Removing old persisted prim {1} from region {2}", m_name, m_name + i, m_scene.RegionInfo.RegionName);
+                        m_scene.DeleteSceneObject((SceneObjectGroup)e, false);
+                        break;
+                    }
+                }
+            }
+            m_scene.ForceClientUpdate();
         }
 
         #endregion
@@ -255,7 +281,7 @@ namespace Flocking
 			if (args.Trim ().Length > 0) {
 				argStr = " <" + args + "> ";
 			}
-            m_log.InfoFormat("[{0}]: Adding command {1} - {2} to region '{3}'", m_name, "birds-" + cmd + argStr, help, m_scene.RegionInfo.RegionName);
+            m_log.InfoFormat("[{0}]: Adding console command {1} - {2} to region {3}", m_name, "birds-" + cmd + argStr, help, m_scene.RegionInfo.RegionName);
             //m_scene.AddCommand (this, "birds-" + cmd, "birds-" + cmd + argStr, help, fn);
             m_console.Commands.AddCommand(m_name, false, "birds-" + cmd, "birds-" + cmd + argStr, help, fn);
         }

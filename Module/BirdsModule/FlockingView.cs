@@ -88,12 +88,12 @@ namespace Flocking
             SceneObjectPart rootPart;
 
 			if (existing == null) {
-                m_log.InfoFormat("[{0}]: Adding prim {1} from region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
+                m_log.InfoFormat("[{0}]: Adding prim {1} in region {2}", m_name, bird.Id, m_scene.RegionInfo.RegionName);
                 SceneObjectGroup group = findByName (m_birdPrim);
 				sog = CopyPrim (group, bird.Id);
                 rootPart = sog.RootPart;
                 //set prim to phantom
-                sog.UpdatePrimFlags(rootPart.LocalId, false, true, true, false);
+                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 				m_sogMap [bird.Id] = sog;
 				m_scene.AddNewSceneObject (sog, false);
                 // Fire script on_rez
