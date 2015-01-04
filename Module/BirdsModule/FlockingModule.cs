@@ -72,6 +72,7 @@ namespace Flocking
 		private float m_tolerance;
         private float m_borderSize;
         private int m_maxHeight;
+        private Vector3 m_shoutPos = new Vector3(128f, 128f, 30f); 
         static object m_sync = new object();
 
         public IConfigSource m_config;
@@ -138,6 +139,7 @@ namespace Flocking
                 m_view = new FlockingView(m_name, m_scene);
                 m_view.BirdPrim = m_birdPrim;
                 m_frame = 0;
+                m_shoutPos = new Vector3(scene.RegionInfo.RegionSizeX / 2f, scene.RegionInfo.RegionSizeY / 2f, 30f);
 
                 FlockInitialise();
 
@@ -303,13 +305,13 @@ namespace Flocking
             AddCommand ("enable", "", "Enable Birds Flocking", HandleEnableCmd);
             AddCommand ("disable", "", "Disable Birds Flocking", HandleDisableCmd);
 			AddCommand ("size", "num", "Adjust the size of the flock ", HandleSetSizeCmd);
-			AddCommand ("stats", "", "Show flocking stats", HandleShowStatsCmd);
 			AddCommand ("prim", "name", "Set the prim used for each bird to that passed in", HandleSetPrimCmd);
             AddCommand ("speed", "num", "Set the maximum velocity each bird may achieve", HandleSetMaxSpeedCmd);
             AddCommand("force", "num", "Set the maximum force each bird may accelerate", HandleSetMaxForceCmd);
             AddCommand("distance", "num", "Set the maximum distance that other birds are to be considered in the same flock as us", HandleSetNeighbourDistanceCmd);
             AddCommand("separation", "num", "How far away from other birds we would like to stay", HandleSetDesiredSeparationCmd);
             AddCommand("tolerance", "num", "How close to the edges of things can we get without being worried", HandleSetToleranceCmd);
+            AddCommand("stats", "", "Show birds stats", HandleShowStatsCmd);
             AddCommand("framerate", "num", "[debugging] only update birds every <num> frames", HandleSetFrameRateCmd);
         }
 		
@@ -333,14 +335,20 @@ namespace Flocking
 		private void ShowResponse (string response, bool inWorld)
 		{
 			if (inWorld) {
-				IClientAPI ownerAPI = null;
-				if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
-					ownerAPI.SendBlueBoxMessage (m_owner, "Birds", response);
-				}
+				//IClientAPI ownerAPI = null;
+				//if (m_scene.TryGetClient (m_owner, out ownerAPI)) {
+				//	ownerAPI.SendBlueBoxMessage (m_owner, "Birds", response);
+				//}
+                SendSimChat(response, m_chatChannel);
 			} else {
 				MainConsole.Instance.Output (response);
 			}
 		}
+
+        private void SendSimChat(string msg, int channel)
+        {
+            m_scene.SimChatBroadcast(Utils.StringToBytes(msg), ChatTypeEnum.Region, channel, m_shoutPos, m_name, UUID.Zero, false);
+        }
 
         public void HandleDisableCmd(string module, string[] args)
         {
@@ -408,7 +416,43 @@ namespace Flocking
 		{
 			if (ShouldHandleCmd ()) {
 				bool inWorld = IsInWorldCmd (ref args);
-				ShowResponse ("Num Birds = " + m_model.Size, inWorld);
+                int i;
+                int s=m_model.Size;
+                UUID uid;
+                if (inWorld)
+                {
+                    m_log.InfoFormat("[{0}]: Sending bird statistics to region {1}.", m_name, m_scene.RegionInfo.RegionName);
+                }
+
+                ShowResponse("birds-started = " + (m_enabled ? "True" : "False"), inWorld);
+                ShowResponse("birds-enabled = " + (m_ready ? "True" : "False"), inWorld);
+                ShowResponse("birds-prim = " + m_view.BirdPrim, inWorld);
+                ShowResponse("birds-framerate = " + m_frameUpdateRate, inWorld);
+                ShowResponse("birds-maxsize = " + m_maxFlockSize, inWorld);
+                ShowResponse("birds-size = " + s, inWorld);
+                ShowResponse("birds-speed = " + m_model.MaxSpeed, inWorld);
+                ShowResponse("birds-force = " + m_model.MaxForce, inWorld);
+                ShowResponse("birds-distance = " + m_model.NeighbourDistance, inWorld);
+                ShowResponse("birds-separation = " + m_model.DesiredSeparation, inWorld);
+                ShowResponse("birds-tolerance = " + m_model.Tolerance, inWorld);
+                ShowResponse("birds-border = " + m_borderSize, inWorld);
+
+                for (i = 0; i < s; i++)
+                {
+                    uid = UUID.Zero;
+                    foreach (EntityBase e in m_scene.GetEntities())
+                    {
+                        if (e.Name == m_name + i)
+                        {
+                            SceneObjectGroup sog = (SceneObjectGroup)e;
+                            SceneObjectPart rootPart = sog.RootPart;
+                            uid = rootPart.UUID;
+                            break;
+                        }
+                    }
+
+                    ShowResponse("birds-prim" + i + " = " + m_name + i + " : " + uid.ToString(), inWorld);
+                }
 			}
 		}
 		

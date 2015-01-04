@@ -56,6 +56,7 @@ namespace Flocking
 		}
 		
 		public String BirdPrim {
+            get { return m_birdPrim; }
 			set{ m_birdPrim = value;}
 		}
 
