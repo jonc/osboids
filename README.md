@@ -68,7 +68,7 @@ to control the birds at runtime:
 	birds-enable or /118 enable                     ;enable the flocking simulation if disabled
 	birds-disable or /118 disable                   ;stop all birds and remove them from the scene
 	birds-prim <name> or /118 prim <name>           ;change the bird prim to a prim already rezzed in the scene
-	birds-stats or /118 stats                       ;show some statistics (needs work)
+	birds-stats or /118 stats                       ;show all the parameters and list the bird prim names and uuids
 	birds-framerate <num> or /118 framerate <num>   ;only update the flock positions every <num> frames
 	                                                ;only really useful for photography and debugging bird
 	                                                ;behaviour
