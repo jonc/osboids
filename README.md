@@ -109,9 +109,9 @@ is updated every simulator frame.
 
 Statistics:
 
-The stats command in-world or via script returns data to BirdsChatChannel. The cosole command returns stats to the console.
+The stats command in-world or via script returns data to BirdsChatChannel. The console command returns stats to the console.
 All the the modules parameters are returned including a list of the active bird prims currently rezzed in the region,
-and the UUIDs of those prims. Also included is a list of any avatar UUIDs that may be sitting on those prims. Here
+and the UUIDs of those prims' root prim. Also included is a list of any avatar UUIDs that may be sitting on those prims. Here
 is an example output:
 
 	birds-started = False
