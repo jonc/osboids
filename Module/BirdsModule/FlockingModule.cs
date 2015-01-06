@@ -419,7 +419,8 @@ namespace Flocking
                 int i;
                 int s=m_model.Size;
                 UUID primUuid;
-                UUID avatarSatOn;
+                List<ScenePresence> avatarsSitList = new List<ScenePresence>();
+                string avUuids;
                 if (inWorld)
                 {
                     m_log.InfoFormat("[{0}]: Sending bird statistics to region {1}.", m_name, m_scene.RegionInfo.RegionName);
@@ -441,7 +442,8 @@ namespace Flocking
                 for (i = 0; i < s; i++)
                 {
                     primUuid = UUID.Zero;
-                    avatarSatOn = UUID.Zero;
+                    avatarsSitList.Clear();
+                    avUuids = "";
                     foreach (EntityBase e in m_scene.GetEntities())
                     {
                         if (e.Name == m_name + i)
@@ -449,12 +451,17 @@ namespace Flocking
                             SceneObjectGroup sog = (SceneObjectGroup)e;
                             SceneObjectPart rootPart = sog.RootPart;
                             primUuid = rootPart.UUID;
-                            avatarSatOn = rootPart.SitTargetAvatar;
+                            avatarsSitList = sog.GetSittingAvatars();
+                            foreach (ScenePresence av in avatarsSitList)
+                            {
+                                avUuids += av.UUID.ToString() + " ";
+                            }
+
                             break;
                         }
                     }
 
-                    ShowResponse("birds-prim" + i + " = " + m_name + i + " : " + primUuid.ToString() + " : " + avatarSatOn.ToString(), inWorld);
+                    ShowResponse("birds-prim" + i + " = " + m_name + i + " : " + primUuid.ToString() + " : " + avUuids.Trim(), inWorld);
                 }
 			}
 		}

@@ -1,8 +1,13 @@
 INonSharedRegion Module -  ability to control flocks of prims within an OpenSim scene.
 
-To build from source
+To build from source:
 
 Add OpenSimBirds source tree under opensim/addon-modules
+
+e.g.
+
+	cd ~/opensim/addon-modules
+	git clone https://github.com/JakDaniels/OpenSimBirds.git
 
 ./runprebuild.sh against opensim root to build this module into the solution
 then xbuild, or build within Visual Studio / Monodevelop to produce the binaries.
@@ -12,7 +17,7 @@ OpenSimBirds has no external dependencies other than the dlls currently included
 The project generates a single dll - OpenSimBirds.Module.dll which is copied into opensim/bin as part of the build step
 
 
-Configuration
+Configuration:
 
 To become active, the module needs enabled in the ini file. Otherwise it does nothing on startup.
 If you are running multiple regions on one simulator you can have different Birds
@@ -58,7 +63,7 @@ You can specify which channel to use in the .ini:
 
 
 
-Runtime Commands
+Runtime Commands:
 
 The following commands, which can be issued on the Console or via in-world chat or scripted chat on the BirdsChatChannel
 to control the birds at runtime:
@@ -86,7 +91,7 @@ These commands are great for playing with the flock dynamics in real time:
 Of course if distance is less than separation then the birds will never flock. The other way around and they will always
 eventually form one or more flocks.
 
-Bird prims
+Bird prims:
 
 Any currently rezzed in-scene-object can be used as the bird prim. However fps is very much affected by the
 complexity of the entity to use. It is easier to throw a single prim (or sculpty) around the scene than it is to
@@ -102,8 +107,49 @@ in network position updates. 50 of the same birds generates about 750kbps traffi
 Each bird uses roughly 15kbps of network traffic. This is all measured using an update framerate of 1, i.e. birds' position
 is updated every simulator frame.
 
+Statistics:
 
-Please Note 
+The stats command in-world or via script returns data to BirdsChatChannel. The cosole command returns stats to the console.
+All the the modules parameters are returned including a list of the active bird prims currently rezzed in the region,
+and the UUIDs of those prims. Also included is a list of any avatar UUIDs that may be sitting on those prims. Here
+is an example output:
+
+	birds-started = False
+	birds-enabled = True
+	birds-prim = SeaGull1
+	birds-framerate = 1
+	birds-maxsize = 100
+	birds-size = 20
+	birds-speed = 1.5
+	birds-force = 0.2
+	birds-distance = 25
+	birds-separation = 10
+	birds-tolerance = 5
+	birds-border = 5
+	birds-prim0 = OpenSimBirds0 : 01abef79-7fb2-4c8d-831e-62ce1ce878f1 :
+	birds-prim1 = OpenSimBirds1 : af85996d-af4d-4dda-bc89-721c51e09d0c :
+	birds-prim2 = OpenSimBirds2 : ca766390-1877-4b19-a29e-4590cf40aece :
+	birds-prim3 = OpenSimBirds3 : 6694bfa9-8e7f-4ac5-b336-ad13e5cfced2 :
+	birds-prim4 = OpenSimBirds4 : 1c6b152d-dcca-4fef-8979-b7ccc8139e1e :
+	birds-prim5 = OpenSimBirds5 : 08bba2cc-d427-4855-a7f0-57aa55109707 :
+	birds-prim6 = OpenSimBirds6 : bbeb8b6d-28d8-41a9-b8ce-dab3173bd454 :
+	birds-prim7 = OpenSimBirds7 : 45c73475-1f0f-487f-ac9f-87d30d0315e8 :
+	birds-prim8 = OpenSimBirds8 : d5891cc8-c196-4b05-82ef-3c7d0f703963 :
+	birds-prim9 = OpenSimBirds9 : 557b61e1-5fd6-4878-980e-e93cabcc078f :
+	birds-prim10 = OpenSimBirds10 : 7ff2c02d-d73c-4e49-a4e9-84b652dc70a9 :
+	birds-prim11 = OpenSimBirds11 : c2b0820c-ba20-4318-a0e8-ec6ad521f524 :
+	birds-prim12 = OpenSimBirds12 : e8e87309-7a47-4983-89a1-4bb11d05a40c :
+	birds-prim13 = OpenSimBirds13 : a351e0e3-ae99-48b8-877d-65156f437b33 :
+	birds-prim14 = OpenSimBirds14 : 150f1c3b-e9d9-4cda-9e03-69fb5286e436 :
+	birds-prim15 = OpenSimBirds15 : ebf63de1-d419-45d0-8eee-3db14295e401 :
+	birds-prim16 = OpenSimBirds16 : faad97af-4ee6-425c-b221-99ef53650e93 :
+	birds-prim17 = OpenSimBirds17 : d75ba544-bbc2-4f5a-9d7e-00e21ed6f191 :
+	birds-prim18 = OpenSimBirds18 : b91e42cb-ae5b-4f03-bf6e-dc03d52858b7 : 19cc284d-11c6-4ee7-a8de-f69788d08434
+	birds-prim19 = OpenSimBirds19 : 44aa3e14-56bc-43dd-afbd-7348c5dfe3a5 :
+
+In the above example, there is one avatar sitting on bird-prim18. For more than one avatar the UUID list will be separated by spaces.
+
+Please Note: 
 
 This module is currently only tested against opensim master. 
 
