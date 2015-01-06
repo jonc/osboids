@@ -418,7 +418,8 @@ namespace Flocking
 				bool inWorld = IsInWorldCmd (ref args);
                 int i;
                 int s=m_model.Size;
-                UUID uid;
+                UUID primUuid;
+                UUID avatarSatOn;
                 if (inWorld)
                 {
                     m_log.InfoFormat("[{0}]: Sending bird statistics to region {1}.", m_name, m_scene.RegionInfo.RegionName);
@@ -439,19 +440,21 @@ namespace Flocking
 
                 for (i = 0; i < s; i++)
                 {
-                    uid = UUID.Zero;
+                    primUuid = UUID.Zero;
+                    avatarSatOn = UUID.Zero;
                     foreach (EntityBase e in m_scene.GetEntities())
                     {
                         if (e.Name == m_name + i)
                         {
                             SceneObjectGroup sog = (SceneObjectGroup)e;
                             SceneObjectPart rootPart = sog.RootPart;
-                            uid = rootPart.UUID;
+                            primUuid = rootPart.UUID;
+                            avatarSatOn = rootPart.SitTargetAvatar;
                             break;
                         }
                     }
 
-                    ShowResponse("birds-prim" + i + " = " + m_name + i + " : " + uid.ToString(), inWorld);
+                    ShowResponse("birds-prim" + i + " = " + m_name + i + " : " + primUuid.ToString() + " : " + avatarSatOn.ToString(), inWorld);
                 }
 			}
 		}
