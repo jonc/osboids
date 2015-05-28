@@ -53,6 +53,7 @@ namespace Flocking
         private static readonly ILog m_log = LogManager.GetLogger (System.Reflection.MethodBase.GetCurrentMethod ().DeclaringType);
 
         public string m_name = "OpenSimBirds";
+        private string m_regionConfigDir = "";
         private Scene m_scene;
         private ICommandConsole m_console;
 		private FlockingModel m_model;
@@ -93,14 +94,36 @@ namespace Flocking
 
 		public void AddRegion (Scene scene)
 		{
+            IConfig cnf;
             m_log.InfoFormat("[{0}]: Adding region {1} to this module", m_name, scene.RegionInfo.RegionName);
-            IConfig cnf = m_config.Configs[scene.RegionInfo.RegionName];
+
+            cnf = m_config.Configs["Startup"];
+            m_regionConfigDir = cnf.GetString("regionload_regionsdir", Path.Combine(Util.configDir(), "bin/Regions/"));
+            
+            cnf = m_config.Configs[scene.RegionInfo.RegionName];
 
             if (cnf == null)
             {
-                m_log.InfoFormat("[{0}]: No region section [{1}] found in configuration. Birds in this region are set to Disabled", m_name, scene.RegionInfo.RegionName);
-                m_enabled = false;
-                return;
+                m_log.InfoFormat("[{0}]: No region section [{1}] found in addon-modules/{2}/config/*.ini configuration files.", m_name, scene.RegionInfo.RegionName, m_name);
+                //string moduleConfigFile = Path.Combine(Util.configDir(),m_name + ".ini");
+                string moduleConfigFile = Path.Combine(m_regionConfigDir, "Regions.ini");
+                try
+                {
+                    m_log.InfoFormat("[{0}]: Checking {1} for [{2}] section containing valid config keys", m_name, moduleConfigFile, scene.RegionInfo.RegionName);
+                    m_config = new IniConfigSource(moduleConfigFile);
+                    cnf = m_config.Configs[scene.RegionInfo.RegionName];
+                }
+                catch (Exception)
+                {
+                    cnf = null;
+                }
+
+                if (cnf == null)
+                {
+                    m_log.InfoFormat("[{0}]: No region section [{1}] found in configuration {2}. Birds in this region are set to Disabled", m_name, scene.RegionInfo.RegionName, moduleConfigFile);
+                    m_enabled = false;
+                    return;
+                }
             }
 
             m_enabled = cnf.GetBoolean("BirdsEnabled", false);
