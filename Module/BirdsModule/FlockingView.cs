@@ -143,9 +143,9 @@ namespace Flocking
 					break;
 				}
 			}
-			
 			// can't find it so make a default one
 			if (retVal == null) {
+                m_log.InfoFormat("[{0}]: Prim named {1} was not found in region {2}. Making default wooden sphere.", m_name, name, m_scene.RegionInfo.RegionName);
 				retVal = MakeDefaultPrim (name);
 			}
 
