@@ -27,11 +27,15 @@ customize per Region setting in Regions.ini
 
 The configuration for this module can be placed in one of two places:
 
+Option 1:
+
 	bin/addon-modules/OpenSimBirds/config/OpenSimBirds.ini
 
 This follows the similar format as a Regions.ini file, where you specify setting for
 each region using the [Region Name] section heading. There is an example .ini file
 provided which should be edited and copied to the correct place above.
+
+Option 2:
 
 	bin/Regions/Regions.ini
 
