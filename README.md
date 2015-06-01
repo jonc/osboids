@@ -11,7 +11,8 @@ e.g.
 
 ./runprebuild.sh against opensim root to build this module into the solution
 then xbuild, or build within Visual Studio / Monodevelop to produce the binaries.
-Remember you need an .ini file in bin/addon-modules/OpenSimBirds/config/
+
+Remember you need an .ini file in bin/addon-modules/OpenSimBirds/config/ *or* setting in your existing Regions.ini
 
 OpenSimBirds has no external dependencies other than the dlls currently included in opensim.
 The project generates a single dll - OpenSimBirds.Module.dll which is copied into opensim/bin as part of the build step
@@ -24,13 +25,20 @@ If you are running multiple regions on one simulator you can have different Bird
 settings per region in the configuration file, in the exact same way you can
 customize per Region setting in Regions.ini
 
-The configuration file for this module should be placed in:
+The configuration for this module can be placed in one of two places:
 
-bin/addon-modules/OpenSimBirds/config/OpenSimBirds.ini
+1. bin/addon-modules/OpenSimBirds/config/OpenSimBirds.ini
 
-and follows the similar format as a Regions.ini file, where you specify setting for
+This follows the similar format as a Regions.ini file, where you specify setting for
 each region using the [Region Name] section heading. There is an example .ini file
 provided which should be edited and copied to the correct place above.
+
+2. bin/Regions/Regions.ini
+
+Add config parameters to the existing Regions.ini file under the appropriate region name heading.
+The file is usually in the above location, but this could have been changed in OpenSim.ini via the
+'regionload_regionsdir' parameter in the [Startup] section of OpenSim.ini
+
 
 Here is an example config:
 
@@ -49,7 +57,7 @@ Here is an example config:
 		BirdsBorderSize = 5         ;how close to the edge of a region can we get?
 		BirdsMaxHeight = 256        ;how high are we allowed to flock
 		BirdsUpdateEveryNFrames = 1 ;update bird positions every N simulator frames
-		BirdsPrim = seagull01       ;By default the module will create a flock of plain wooden spheres, 
+		BirdsPrim = SeaGull1        ;By default the module will create a flock of plain wooden spheres, 
 		                            ;however this can be overridden to the name of an existing prim that
 		                            ;needs to already exist in the scene - i.e. be rezzed in the region.	
 
