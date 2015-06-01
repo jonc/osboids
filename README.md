@@ -167,3 +167,5 @@ This module is currently only tested against opensim master.
 
 Licence: all files released under a BSD licence
 If you have any question please contact Jak Daniels, jak@ateb.co.uk
+If you do fork or modify this project for the better, please let me know!! I would be interested to incorporate any enhancements you may make.
+
