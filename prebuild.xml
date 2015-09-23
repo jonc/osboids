@@ -18,13 +18,13 @@
      <Reference name="OpenMetaverseTypes"/>
      <Reference name="OpenMetaverse.StructuredData"/>
      <Reference name="OpenSim.Framework"/>
+     <Reference name="OpenSim.Framework.Communications"/>
+     <Reference name="OpenSim.Framework.Console"/>
      <Reference name="OpenSim.Region.Framework"/>
+     <Reference name="OpenSim.Region.ScriptEngine.Shared"/>
      <Reference name="Nini"/>
      <Reference name="log4net"/>
      <Reference name="Mono.Addins"/>
-     <Reference name="OpenSim.Framework"  path="../../../bin/" />
-     <Reference name="OpenSim.Framework.Communications" path="../../../bin/" />
-     <Reference name="OpenSim.Framework.Console" path="../../../bin/" />
 
      <Files>
        <Match pattern="*.cs" recurse="true">

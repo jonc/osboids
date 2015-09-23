@@ -37,9 +37,11 @@ using System.Threading;
 using log4net;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+using OpenSim.Region.ScriptEngine.Shared;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
 using Mono.Addins;
+using LSL_List = OpenSim.Region.ScriptEngine.Shared.LSL_Types.list;
 
 [assembly: Addin("OpenSimBirds", "0.2")]
 [assembly: AddinDependency("OpenSim.Region.Framework", OpenSim.VersionInfo.VersionNumber)]
@@ -336,6 +338,21 @@ namespace Flocking
             AddCommand("tolerance", "num", "How close to the edges of things can we get without being worried", HandleSetToleranceCmd);
             AddCommand("stats", "", "Show birds stats", HandleShowStatsCmd);
             AddCommand("framerate", "num", "[debugging] only update birds every <num> frames", HandleSetFrameRateCmd);
+        }
+
+        private void RegisterScriptFunctions()
+        {
+            IScriptModuleComms comms = m_scene.RequestModuleInterface<IScriptModuleComms>();
+            if (comms != null)
+            {
+                comms.RegisterScriptInvocation(this, "birdsGetStats");
+
+            }
+        }
+
+        private string birdsGetStats(UUID host, UUID script, string stat)
+        {
+            return ""; //currently a placeholder
         }
 		
 		private bool ShouldHandleCmd ()
