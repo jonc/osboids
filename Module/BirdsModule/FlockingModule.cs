@@ -195,6 +195,7 @@ namespace Flocking
 				scene.EventManager.OnFrame -= FlockUpdate;
 				scene.EventManager.OnChatFromClient -= SimChatSent;
                 scene.EventManager.OnChatFromWorld -= SimChatSent;
+                scene.EventManager.OnPrimsLoaded -= PrimsLoaded;
 			}
 		}
 
