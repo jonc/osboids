@@ -60,6 +60,7 @@ namespace Flocking
         private ICommandConsole m_console;
 		private FlockingModel m_model;
 		private FlockingView m_view;
+        private bool m_startup = true;
 		private bool m_enabled = false;
 		private bool m_ready = false;
 		private uint m_frame = 0;
@@ -128,10 +129,11 @@ namespace Flocking
                 }
             }
 
-            m_enabled = cnf.GetBoolean("BirdsEnabled", false);
+            m_startup = cnf.GetBoolean("BirdsModuleStartup", true);
 
-            if (m_enabled)
+            if (m_startup)
             {
+                m_enabled = cnf.GetBoolean("BirdsEnabled", false);
                 m_chatChannel = cnf.GetInt("BirdsChatChannel", 118);
                 m_birdPrim = cnf.GetString("BirdsPrim", "birdPrim");
                 m_flockSize = cnf.GetInt("BirdsFlockSize", 50);
@@ -145,7 +147,7 @@ namespace Flocking
                 m_maxHeight = cnf.GetInt("BirdsMaxHeight", 256);
                 m_frameUpdateRate = cnf.GetInt("BirdsUpdateEveryNFrames", 1);
 
-                m_log.InfoFormat("[{0}] Enabled on channel {1} with Flock Size {2}", m_name, m_chatChannel, m_flockSize);
+                m_log.InfoFormat("[{0}] Module is {1} listening for commands on channel {2} with Flock Size {3}", m_name, m_enabled?"enabled and":"disabled, but", m_chatChannel, m_flockSize);
 
                 m_scene = scene;
                 m_console = MainConsole.Instance;
@@ -168,15 +170,15 @@ namespace Flocking
 
                 FlockInitialise();
 
-             }
+            }
 		}
 
 		public void RegionLoaded (Scene scene)
 		{
-            if (m_enabled)
+            if (m_startup)
             {
                 // Mark Module Ready for duty
-				m_ready = true;
+			    m_ready = true;
 			}            
 		}
 
@@ -189,24 +191,25 @@ namespace Flocking
 		public void RemoveRegion (Scene scene)
 		{
             m_log.InfoFormat("[{0}]: Removing region {1} from this module", m_name, scene.RegionInfo.RegionName);
-            if (m_enabled) {
+            if (m_startup) {
                 m_view.Clear();
-                m_ready = false;
-				scene.EventManager.OnFrame -= FlockUpdate;
-				scene.EventManager.OnChatFromClient -= SimChatSent;
+			    scene.EventManager.OnFrame -= FlockUpdate;
+			    scene.EventManager.OnChatFromClient -= SimChatSent;
                 scene.EventManager.OnChatFromWorld -= SimChatSent;
                 scene.EventManager.OnPrimsLoaded -= PrimsLoaded;
-			}
+                m_ready = false;
+            }
 		}
 
         public void Close()
         {
-            if (m_enabled)
+            if (m_startup)
             {
-                m_ready = false;
                 m_scene.EventManager.OnFrame -= FlockUpdate;
                 m_scene.EventManager.OnChatFromClient -= SimChatSent;
                 m_scene.EventManager.OnChatFromWorld -= SimChatSent;
+                m_scene.EventManager.OnPrimsLoaded -= PrimsLoaded;
+                m_ready = false;
             }
         }
 
@@ -253,7 +256,8 @@ namespace Flocking
 
         public void FlockUpdate ()
 		{
-			if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || !m_enabled) {
+            if (!m_ready || !m_enabled || ((m_frame++ % m_frameUpdateRate) != 0))
+            {
 				return;
 			}
 			
@@ -396,18 +400,18 @@ namespace Flocking
             if (m_ready && ShouldHandleCmd ()) {
                 m_log.InfoFormat("[{0}]: Bird flocking is disabled in region {1}.", m_name, m_scene.RegionInfo.RegionName);
                 m_enabled = false;
-                m_ready = false;
+                //m_ready = false;
                 m_view.Clear();
             }
         }
 
         public void HandleEnableCmd(string module, string[] args)
         {
-            if (!m_ready && ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 m_log.InfoFormat("[{0}]: Bird flocking is enabled in region {1}.", m_name, m_scene.RegionInfo.RegionName);
                 m_enabled = true;
-                m_ready = true;
+                //m_ready = true;
             }
         }
 		
@@ -432,7 +436,8 @@ namespace Flocking
 
 		void HandleSetFrameRateCmd (string module, string[] args)
 		{
-			if (ShouldHandleCmd ()) {
+            if (m_ready && ShouldHandleCmd())
+            {
 				int frameRate = Convert.ToInt32( args[1] );
 				m_frameUpdateRate = frameRate;
                 m_log.InfoFormat("[{0}]: Bird updates set to every {1} frames in region {2}.", m_name, frameRate, m_scene.RegionInfo.RegionName);
@@ -441,7 +446,8 @@ namespace Flocking
 
 		public void HandleSetSizeCmd (string module, string[] args)
 		{
-			if (ShouldHandleCmd ()) {
+            if (m_ready && ShouldHandleCmd())
+            {
 				lock( m_sync ) {
 					int newSize = Convert.ToInt32(args[1]);
                     if (newSize > m_maxFlockSize) newSize = m_maxFlockSize;
@@ -455,7 +461,8 @@ namespace Flocking
 		
 		public void HandleShowStatsCmd (string module, string[] args)
 		{
-			if (ShouldHandleCmd ()) {
+            if (m_ready && ShouldHandleCmd())
+            {
 				bool inWorld = IsInWorldCmd (ref args);
                 int i;
                 int s=m_model.Size;
@@ -509,7 +516,8 @@ namespace Flocking
 		
 		public void HandleSetPrimCmd (string module, string[] args)
 		{
-			if (ShouldHandleCmd ()) {
+            if (m_ready && ShouldHandleCmd())
+            {
 				string primName = args[1];
 				lock(m_sync) {
 					m_view.BirdPrim = primName;
@@ -521,7 +529,7 @@ namespace Flocking
 
         public void HandleSetMaxSpeedCmd(string module, string[] args)
         {
-            if (ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 float maxSpeed = (float)Convert.ToDecimal(args[1]);
                 lock (m_sync)
@@ -534,7 +542,7 @@ namespace Flocking
 
         public void HandleSetMaxForceCmd(string module, string[] args)
         {
-            if (ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 float maxForce = (float)Convert.ToDecimal(args[1]);
                 lock (m_sync)
@@ -547,7 +555,7 @@ namespace Flocking
 
         public void HandleSetNeighbourDistanceCmd(string module, string[] args)
         {
-            if (ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 float neighbourDistance = (float)Convert.ToDecimal(args[1]);
                 lock (m_sync)
@@ -560,7 +568,7 @@ namespace Flocking
 
         public void HandleSetDesiredSeparationCmd(string module, string[] args)
         {
-            if (ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 float desiredSeparation = (float)Convert.ToDecimal(args[1]);
                 lock (m_sync)
@@ -573,7 +581,7 @@ namespace Flocking
 
         public void HandleSetToleranceCmd(string module, string[] args)
         {
-            if (ShouldHandleCmd())
+            if (m_ready && ShouldHandleCmd())
             {
                 float tolerance = (float)Convert.ToDecimal(args[1]);
                 lock (m_sync)
