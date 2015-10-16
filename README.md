@@ -30,7 +30,7 @@ configured to do so in the .ini file. It is possible to completely stop the modu
 listening for commands), but you must have a particular setting in the .ini file for that region (see below) - in other
 words, you must have a config for it!
 
-To become active, the module needs enabled in the ini file or commanded to do so from inworld or the console.
+To become active, the module needs to be enabled in the ini file or commanded to do so from inworld or the console.
 Otherwise it does nothing on startup except listen for commands. If you are running multiple regions on one simulator you 
 can have different Birds settings per region in the configuration file, in the exact same way you can customize per Region
 setting in Regions.ini
@@ -60,21 +60,21 @@ Here is an example config:
 
 	[Test Region 1]
 	
-		BirdsModuleStartup = True   ;this is the default and determines whether the module does anything
-		BirdsEnabled = True         ;set to false to disable the birds from appearing in this region	
-		BirdsFlockSize = 50         ;the number of birds to flock
-		BirdsMaxFlockSize = 100     ;the maximum flock size that can be created (keeps things sane)
-		BirdsMaxSpeed = 3           ;how far each bird can travel per update
-		BirdsMaxForce = 0.25        ;the maximum acceleration allowed to the current velocity of the bird
-		BirdsNeighbourDistance = 25 ;max distance for other birds to be considered in the same flock as us
-		BirdsDesiredSeparation = 20 ;how far away from other birds we would like to stay
-		BirdsTolerance = 5          ;how close to the edges of things can we get without being worried
-		BirdsBorderSize = 5         ;how close to the edge of a region can we get?
-		BirdsMaxHeight = 256        ;how high are we allowed to flock
-		BirdsUpdateEveryNFrames = 1 ;update bird positions every N simulator frames
-		BirdsPrim = SeaGull1        ;By default the module will create a flock of plain wooden spheres, 
-		                            ;however this can be overridden to the name of an existing prim that
-		                            ;needs to already exist in the scene - i.e. be rezzed in the region.	
+	 BirdsModuleStartup = True   ;this is the default and determines whether the module does anything
+	 BirdsEnabled = True         ;set to false to disable the birds from appearing in this region	
+	 BirdsFlockSize = 50         ;the number of birds to flock
+	 BirdsMaxFlockSize = 100     ;the maximum flock size that can be created (keeps things sane)
+	 BirdsMaxSpeed = 3           ;how far each bird can travel per update
+	 BirdsMaxForce = 0.25        ;the maximum acceleration allowed to the current velocity of the bird
+	 BirdsNeighbourDistance = 25 ;max distance for other birds to be considered in the same flock as us
+	 BirdsDesiredSeparation = 20 ;how far away from other birds we would like to stay
+	 BirdsTolerance = 5          ;how close to the edges of things can we get without being worried
+	 BirdsBorderSize = 5         ;how close to the edge of a region can we get?
+	 BirdsMaxHeight = 256        ;how high are we allowed to flock
+	 BirdsUpdateEveryNFrames = 1 ;update bird positions every N simulator frames
+	 BirdsPrim = SeaGull1        ;By default the module will create a flock of plain wooden spheres, 
+	                             ;however this can be overridden to the name of an existing prim that
+	                             ;needs to already exist in the scene - i.e. be rezzed in the region.	
 
 
 
@@ -82,7 +82,7 @@ Various runtime commands control the flocking module behaviour - described below
 from the Console or in world by directing them to a chat channel either from the client's Local Chat or via a script.
 You can specify which channel to use in the .ini:
 
-		BirdsChatChannel = 118      ;the chat channel to listen for Bird commands on
+	 BirdsChatChannel = 118      ;the chat channel to listen for Bird commands on
 
 
 
