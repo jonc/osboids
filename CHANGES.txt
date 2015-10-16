@@ -22,6 +22,13 @@
   added support to the module for varregions 
   
 24/12/2014
-	renamed the modeul to OpenSimBirds, changed all references to [Bb]oids to [Bb]irds in code
+	renamed the module to OpenSimBirds, changed all references to [Bb]oids to [Bb]irds in code
 	change the configuration to use own ini file and to setup per region configurations
 	changed Util class to BirdsUtil to avoid clash with OpenSim.Util
+	
+Um.... I think I missed some change log here... many things were changed. Use the git log??
+	
+16/10/2015
+  added a setting to determine whether the module is active on startup. This defaults to true,
+  meaning that even if there is no config at all the module still loads and waits for commands 
+  from the console or in-world.
