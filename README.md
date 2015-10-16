@@ -12,7 +12,10 @@ e.g.
 ./runprebuild.sh against opensim root to build this module into the solution
 then xbuild, or build within Visual Studio / Monodevelop to produce the binaries.
 
-Remember you need an .ini file in bin/addon-modules/OpenSimBirds/config/ *or* setting in your existing Regions.ini
+OpenSimBirds does not need a config in order to run, but without one it will not persist your bird flock settings from one
+region restart to another!
+
+The settings go in an .ini file in bin/addon-modules/OpenSimBirds/config/ *or* in your existing Regions.ini
 
 OpenSimBirds has no external dependencies other than the dlls currently included in opensim.
 The project generates a single dll - OpenSimBirds.Module.dll which is copied into opensim/bin as part of the build step
@@ -20,10 +23,17 @@ The project generates a single dll - OpenSimBirds.Module.dll which is copied int
 
 Configuration:
 
-To become active, the module needs enabled in the ini file. Otherwise it does nothing on startup.
-If you are running multiple regions on one simulator you can have different Birds
-settings per region in the configuration file, in the exact same way you can
-customize per Region setting in Regions.ini
+If you have the module added to or compiled with your OpenSim build then it will run a instance of itself once per region.
+By default it will configure itself to some sensible defaults and will sit quietly in the background waiting for commands
+from the console, or from in-world. It will not enable itself (i.e. rez some birds) until commanded to do so, or 
+configured to do so in the .ini file. It is possible to completely stop the module from doing anything (including 
+listening for commands), but you must have a particular setting in the .ini file for that region (see below) - in other
+words, you must have a config for it!
+
+To become active, the module needs enabled in the ini file or commanded to do so from inworld or the console.
+Otherwise it does nothing on startup except listen for commands. If you are running multiple regions on one simulator you 
+can have different Birds settings per region in the configuration file, in the exact same way you can customize per Region
+setting in Regions.ini
 
 The configuration for this module can be placed in one of two places:
 
@@ -49,8 +59,9 @@ Here is an example config:
 	;; Set the Birds settings per named region
 
 	[Test Region 1]
-
-		BirdsEnabled = True         ;set to false to disable the module in this region	
+	
+		BirdsModuleStartup = True   ;this is the default and determines whether the module does anything
+		BirdsEnabled = True         ;set to false to disable the birds from appearing in this region	
 		BirdsFlockSize = 50         ;the number of birds to flock
 		BirdsMaxFlockSize = 100     ;the maximum flock size that can be created (keeps things sane)
 		BirdsMaxSpeed = 3           ;how far each bird can travel per update
@@ -82,7 +93,7 @@ to control the birds at runtime:
 
 	birds-stop or /118 stop                         ;stop all birds flocking 
 	birds-start or /118 start                       ;start all birds flocking
-	birds-enable or /118 enable                     ;enable the flocking simulation if disabled
+	birds-enable or /118 enable                     ;enable the flocking simulation if disabled and rez new birds
 	birds-disable or /118 disable                   ;stop all birds and remove them from the scene
 	birds-prim <name> or /118 prim <name>           ;change the bird prim to a prim already rezzed in the scene
 	birds-stats or /118 stats                       ;show all the parameters and list the bird prim names and uuids

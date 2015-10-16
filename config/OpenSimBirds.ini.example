@@ -2,7 +2,8 @@
 
 [Test Region 2]
 
-	BirdsEnabled = True         ;set to false to disable the module in this region
+	BirdsModuleStartup = True   ;this is the default and determines whether the module does anything
+	BirdsEnabled = True         ;set to false to disable the birds from appearing in this region
 	BirdsChatChannel = 118      ;which channel do we listen on for in world commands	
 	BirdsFlockSize = 20         ;the number of birds to flock
 	BirdsMaxSpeed = 1.5         ;how far each bird can travel per update
