@@ -32,3 +32,8 @@ Um.... I think I missed some change log here... many things were changed. Use th
   added a setting to determine whether the module is active on startup. This defaults to true,
   meaning that even if there is no config at all the module still loads and waits for commands 
   from the console or in-world.
+
+17/10/2015
+	added basic security. It's now possible to specify a list of allowed UUIDs (or ESTATE_MANAGER or 
+	ESTATE_OWNER) of avatars that can send commands to the module from chat, or of object owners
+	if the commands are from a script.
