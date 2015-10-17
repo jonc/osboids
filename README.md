@@ -123,7 +123,10 @@ By default anyone can send commands to the module from within a script or via th
 You should use a high negative value for channel if you want to allow script access, but not in-world chat. Further you can restrict
 which users are allowed to control the module using the 'BirdsAllowedControllers' setting. This is a comma separated list of user UUIDs,
 but it may also contain one of the pre-defined constants ESTATE_OWNER (evaluates to the UUID of the estate owner) and ESTATE_MANAGER 
-(evaluates to a list of estate manager UUIDS).
+(evaluates to a list of estate manager UUIDS). 
+
+* For commands sent from in-world chat, it is the UUID of the avatar sending the command that is checked against the list.
+* For commands sent from a script it is the UUID of the owner of the prim in which the script resides that is checked against the list.
 
 Bird prims:
 

@@ -311,8 +311,19 @@ namespace Flocking
 		protected void SimChatSent (Object x, OSChatMessage msg)
 		{
 			if (msg.Channel != m_chatChannel) return; // not for us
+            if (m_allowedControllers.Count > 0)
+            {
+                bool reject = true;
+                if (msg.SenderObject != null)
+                {
+                    UUID ooUUID = ((SceneObjectPart)msg.SenderObject).OwnerID;
+                    //m_log.InfoFormat("[{0}]: Message from object {1} with OwnerID: {2}", m_name, msg.SenderUUID, ooUUID);
+                    if (m_allowedControllers.Contains(ooUUID)) reject = false;
+                }
+                if (m_allowedControllers.Contains(msg.SenderUUID)) reject = false;
 
-            if (m_allowedControllers.Count>0 & !m_allowedControllers.Contains(msg.SenderUUID)) return; // not for us
+                if (reject) return; //not for us
+            }
 
 			// try and parse a valid cmd from this msg
 			string cmd = msg.Message; //.ToLower ();
