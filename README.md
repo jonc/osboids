@@ -76,6 +76,9 @@ Here is an example config:
 	                             ;however this can be overridden to the name of an existing prim that
 	                             ;needs to already exist in the scene - i.e. be rezzed in the region.	
 
+         ;who is allowed to send commands via chat or script: list of UUIDs or ESTATE_OWNER or ESTATE_MANAGER
+         ;or everyone if not specified
+	 BirdsAllowedControllers = ESTATE_OWNER, ESTATE_MANAGER, 12345678-1234-1234-1234-123456789abc
 
 
 Various runtime commands control the flocking module behaviour - described below. These can either be invoked
@@ -113,6 +116,14 @@ These commands are great for playing with the flock dynamics in real time:
 
 Of course if distance is less than separation then the birds will never flock. The other way around and they will always
 eventually form one or more flocks.
+
+Security:
+
+By default anyone can send commands to the module from within a script or via the in-world chat on the 'BirdsChatChannel' channel.
+You should use a high negative value for channel if you want to allow script access, but not in-world chat. Further you can restrict
+which users are allowed to control the module using the 'BirdsAllowedControllers' setting. This is a comma separated list of user UUIDs,
+but it may also contain one of the pre-defined constants ESTATE_OWNER (evaluates to the UUID of the estate owner) and ESTATE_MANAGER 
+(evaluates to a list of estate manager UUIDS).
 
 Bird prims:
 

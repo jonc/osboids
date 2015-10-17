@@ -78,6 +78,7 @@ namespace Flocking
         private int m_maxHeight;
         private Vector3 m_shoutPos = new Vector3(128f, 128f, 30f); 
         static object m_sync = new object();
+        private List<UUID> m_allowedControllers = new List<UUID>();
 
         public IConfigSource m_config;
 
@@ -133,25 +134,60 @@ namespace Flocking
 
             if (m_startup)
             {
+                m_scene = scene;
                 m_enabled = cnf.GetBoolean("BirdsEnabled", false);
                 m_chatChannel = cnf.GetInt("BirdsChatChannel", 118);
                 m_birdPrim = cnf.GetString("BirdsPrim", "birdPrim");
-                m_flockSize = cnf.GetInt("BirdsFlockSize", 50);
+                m_flockSize = cnf.GetInt("BirdsFlockSize", 20);
                 m_maxFlockSize = cnf.GetInt("BirdsMaxFlockSize", 100);
-                m_maxSpeed = cnf.GetFloat("BirdsMaxSpeed", 3f);
-                m_maxForce = cnf.GetFloat("BirdsMaxForce", 0.25f);
+                m_maxSpeed = cnf.GetFloat("BirdsMaxSpeed", 1.5f);
+                m_maxForce = cnf.GetFloat("BirdsMaxForce", 0.2f);
                 m_neighbourDistance = cnf.GetFloat("BirdsNeighbourDistance", 25f);
-                m_desiredSeparation = cnf.GetFloat("BirdsDesiredSeparation", 20f);
+                m_desiredSeparation = cnf.GetFloat("BirdsDesiredSeparation", 10f);
                 m_tolerance = cnf.GetFloat("BirdsTolerance", 5f);
                 m_borderSize = cnf.GetFloat("BirdsRegionBorderSize", 5f);
-                m_maxHeight = cnf.GetInt("BirdsMaxHeight", 256);
+                m_maxHeight = cnf.GetInt("BirdsMaxHeight", 75);
                 m_frameUpdateRate = cnf.GetInt("BirdsUpdateEveryNFrames", 1);
 
-                m_log.InfoFormat("[{0}] Module is {1} listening for commands on channel {2} with Flock Size {3}", m_name, m_enabled?"enabled and":"disabled, but", m_chatChannel, m_flockSize);
+                string allowedControllers = cnf.GetString("BirdsAllowedControllers", UUID.Zero.ToString());
+                if (allowedControllers != UUID.Zero.ToString())
+                {
+                    string[] ac = allowedControllers.Split(new char[] { ',' });
+                    UUID acUUID;
+                    for (int i = 0; i < ac.Length; i++)
+                    {
+                        string value = ac[i].Trim();
+                        if (value == "ESTATE_OWNER")
+                        {
+                            UUID eoUUID = m_scene.RegionInfo.EstateSettings.EstateOwner;
+                            m_allowedControllers.Add(eoUUID);
+                            m_log.InfoFormat("[{0}] Added Estate Owner UUID: {1} to list of allowed users", m_name, eoUUID.ToString());
+                            continue;
+                        }
+                        if (value == "ESTATE_MANAGER")
+                        {
+                            foreach (UUID emUUID in m_scene.RegionInfo.EstateSettings.EstateManagers)
+                            {
+                                m_allowedControllers.Add(emUUID);
+                                m_log.InfoFormat("[{0}] Added Estate Manager UUID: {1} to list of allowed users", m_name, emUUID.ToString());
+                            }
+                            continue;
+                        }
+                        if (UUID.TryParse(ac[i].Trim(), out acUUID))
+                        {
+                            m_allowedControllers.Add(acUUID);
+                            m_log.InfoFormat("[{0}] Added UUID: {1} to list of allowed users", m_name, acUUID.ToString());
+                        }
+                    }
+                }
+                else
+                {
+                    m_log.InfoFormat("[{0}] No command security was defined in the config. Any user may possibly configure this module from a script!", m_name);
+                }
 
-                m_scene = scene;
+                m_log.InfoFormat("[{0}] Module is {1} listening for commands on channel {2} with Flock Size {3}", m_name, m_enabled ? "enabled and" : "disabled, but still", m_chatChannel, m_flockSize);
+
                 m_console = MainConsole.Instance;
-
                 //register commands with the scene
                 RegisterCommands();
 
@@ -159,7 +195,7 @@ namespace Flocking
                 m_scene.EventManager.OnFrame += FlockUpdate;
                 m_scene.EventManager.OnChatFromClient += SimChatSent; //listen for commands sent from the client
                 m_scene.EventManager.OnChatFromWorld += SimChatSent;
-                m_scene.EventManager.OnPrimsLoaded  += PrimsLoaded;
+                m_scene.EventManager.OnPrimsLoaded += PrimsLoaded;
 
                 // init module
                 m_model = new FlockingModel(m_name, m_maxSpeed, m_maxForce, m_neighbourDistance, m_desiredSeparation, m_tolerance, m_borderSize);
@@ -171,6 +207,7 @@ namespace Flocking
                 FlockInitialise();
 
             }
+            else m_log.InfoFormat("[{0}] Module is disabled in Region {1}", m_name, scene.RegionInfo.RegionName);
 		}
 
 		public void RegionLoaded (Scene scene)
@@ -273,8 +310,9 @@ namespace Flocking
 		
 		protected void SimChatSent (Object x, OSChatMessage msg)
 		{
-			if (msg.Channel != m_chatChannel)
-				return; // not for us
+			if (msg.Channel != m_chatChannel) return; // not for us
+
+            if (m_allowedControllers.Count>0 & !m_allowedControllers.Contains(msg.SenderUUID)) return; // not for us
 
 			// try and parse a valid cmd from this msg
 			string cmd = msg.Message; //.ToLower ();

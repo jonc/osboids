@@ -16,3 +16,7 @@
 	BirdsPrim = SeaGull1        ;By default the module will create a flock of plain wooden spheres, 
 				    ;however this can be overridden to the name of an existing prim that
 				    ;needs to already exist in the scene - i.e. be rezzed in the region.	
+        
+        ;who is allowed to send commands via chat or script: list of UUIDs or ESTATE_OWNER or ESTATE_MANAGER
+        ;or everyone if not specified
+	BirdsAllowedControllers = ESTATE_OWNER, ESTATE_MANAGER, 12345678-1234-1234-1234-123456789abc	                            
