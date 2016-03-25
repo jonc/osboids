@@ -93,14 +93,17 @@ namespace Flocking
                 SceneObjectGroup group = findByName (m_birdPrim);
 				sog = CopyPrim (group, bird.Id);
                 rootPart = sog.RootPart;
+                rootPart.AddFlag(PrimFlags.Temporary);
+                rootPart.AddFlag(PrimFlags.Phantom);
                 //set prim to phantom
-                sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
+                //sog.UpdatePrimFlags(rootPart.LocalId, false, false, true, false);
 				m_sogMap [bird.Id] = sog;
 				m_scene.AddNewSceneObject (sog, false);
                 // Fire script on_rez
                 sog.CreateScriptInstances(0, true, m_scene.DefaultScriptEngine, 1);
                 rootPart.ParentGroup.ResumeScripts();
                 rootPart.ScheduleFullUpdate();
+                sog.DetachFromBackup();
 			} else {
 				sog = existing.ParentGroup;
                 m_sogMap[bird.Id] = sog;
