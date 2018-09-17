@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,40 +33,46 @@ namespace Flocking
 {
 	public class FlockingModel
 	{
-        private List<Boid> m_flock = new List<Boid>();
+        private List<Bird> m_flock = new List<Bird>();
 		private FlowMap m_flowMap;
 		private float m_maxSpeed;
 		private float m_maxForce;
 		private float m_neighbourDistance;
 		private float m_desiredSeparation;
 		private float m_tolerance;
+        private float m_border;
+        private string m_name;
 		
 		private Random m_rnd = new Random(Environment.TickCount);
 		
 		public int Size {
 			get {return m_flock.Count;}
 			set {
-				if( value < m_flock.Count ) {
-					m_flock.RemoveRange( 0, m_flock.Count - value );
-				} else while( value > m_flock.Count ) {
-					AddBoid( "boid"+m_flock.Count);	
+				//if( value < m_flock.Count ) {
+				//	m_flock.RemoveRange( 0, m_flock.Count - value );
+				//} else
+                m_flock = new List<Bird>();
+                while( value > m_flock.Count ) {
+					AddBird(m_name + m_flock.Count);	
 				}
 			}
 		}
 		
-		public FlockingModel( float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance ) {
-			m_maxSpeed = maxSpeed;
+		public FlockingModel(string moduleName, float maxSpeed, float maxForce, float neighbourDistance, float desiredSeparation, float tolerance, float border) {
+            m_name = moduleName;
+            m_maxSpeed = maxSpeed;
 			m_maxForce = maxForce;
 			m_neighbourDistance = neighbourDistance;
 			m_desiredSeparation = desiredSeparation;
 			m_tolerance = tolerance;
+            m_border = border;
 		}
 
-		void AddBoid (string name)
+		void AddBird (string name)
 		{
-			Boid boid = new Boid (name, this, m_flowMap);
+			Bird Bird = new Bird (name, this, m_flowMap);
 			
-			// find an initial random location for this Boid
+			// find an initial random location for this Bird
 			// somewhere not within an obstacle
 			int xInit = m_rnd.Next(m_flowMap.LengthX);
 			int yInit = m_rnd.Next(m_flowMap.LengthY);
@@ -77,28 +84,33 @@ namespace Flocking
 				zInit = m_rnd.Next(m_flowMap.LengthZ);
 			}
 				
-			boid.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
-			m_flock.Add (boid);
+			Bird.Location = new Vector3 (Convert.ToSingle(xInit), Convert.ToSingle(yInit), Convert.ToSingle(zInit));
+			m_flock.Add (Bird);
 		}
 						
 		public float MaxSpeed {
 			get {return m_maxSpeed;}
+            set { m_maxSpeed = value; }
 		}
 				
 		public float MaxForce {
 			get {return m_maxForce;}
+            set { m_maxForce = value; }
 		}
 
 		public float NeighbourDistance {
 			get {return m_neighbourDistance;}
+            set { m_neighbourDistance = value; }
 		}
 				
 		public float DesiredSeparation {
 			get {return m_desiredSeparation;}
+            set { m_desiredSeparation = value; }
 		}
 				
 		public float Tolerance {
 			get {return m_tolerance;}
+            set { m_tolerance = value; }
 		}
 				
 
@@ -106,14 +118,14 @@ namespace Flocking
 		{
 			m_flowMap = flowMap;			
   			for (int i = 0; i < num; i++) {
-				AddBoid ("boid"+i );
+				AddBird (m_name + i );
   			}
 		}
 
-		public List<Boid> UpdateFlockPos ()
+		public List<Bird> UpdateFlockPos ()
 		{
-    		foreach (Boid b in m_flock) {
-      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of boids to each boid individually
+    		foreach (Bird b in m_flock) {
+      			b.MoveInSceneRelativeToFlock(m_flock);  // Passing the entire list of Birds to each Bird individually
     		}
 			
 			return m_flock;

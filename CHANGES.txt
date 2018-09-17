@@ -12,3 +12,28 @@
 
 13/07/2011
 	added more documentation
+	
+10/07/2014
+  forked from https://github.com/jonc/osboids
+  
+17/07/2014  
+  refactored the code
+  added some more config items to set the region border size (no go zone) and the max height
+  added support to the module for varregions 
+  
+24/12/2014
+	renamed the module to OpenSimBirds, changed all references to [Bb]oids to [Bb]irds in code
+	change the configuration to use own ini file and to setup per region configurations
+	changed Util class to BirdsUtil to avoid clash with OpenSim.Util
+	
+Um.... I think I missed some change log here... many things were changed. Use the git log??
+	
+16/10/2015
+  added a setting to determine whether the module is active on startup. This defaults to true,
+  meaning that even if there is no config at all the module still loads and waits for commands 
+  from the console or in-world.
+
+17/10/2015
+	added basic security. It's now possible to specify a list of allowed UUIDs (or ESTATE_MANAGER or 
+	ESTATE_OWNER) of avatars that can send commands to the module from chat, or of object owners
+	if the commands are from a script.

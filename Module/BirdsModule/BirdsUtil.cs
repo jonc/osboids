@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +30,7 @@ using OpenMetaverse;
 
 namespace Flocking
 {
-	public class Util
+	public class BirdsUtil
 	{
 		public static Vector3 Limit (Vector3 initial, float maxLen)
 		{

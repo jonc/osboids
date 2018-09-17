@@ -1,0 +1,22 @@
+;; Set the Birds settings per named region
+
+[Test Region 2]
+
+	BirdsModuleStartup = True   ;this is the default and determines whether the module does anything
+	BirdsEnabled = True         ;set to false to disable the birds from appearing in this region
+	BirdsChatChannel = 118      ;which channel do we listen on for in world commands	
+	BirdsFlockSize = 20         ;the number of birds to flock
+	BirdsMaxSpeed = 1.5         ;how far each bird can travel per update
+	BirdsMaxForce = 0.20        ;the maximum acceleration allowed to the current velocity of the bird
+	BirdsNeighbourDistance = 25 ;max distance for other birds to be considered in the same flock as us
+	BirdsDesiredSeparation = 10 ;how far away from other birds we would like to stay
+	BirdsTolerance = 5          ;how close to the edges of things can we get without being worried
+	BirdsBorderSize = 5         ;how close to the edge of a region can we get?
+	BirdsMaxHeight = 75         ;how high are we allowed to flock
+	BirdsPrim = SeaGull1        ;By default the module will create a flock of plain wooden spheres, 
+				    ;however this can be overridden to the name of an existing prim that
+				    ;needs to already exist in the scene - i.e. be rezzed in the region.	
+        
+        ;who is allowed to send commands via chat or script: list of UUIDs or ESTATE_OWNER or ESTATE_MANAGER
+        ;or everyone if not specified
+	BirdsAllowedControllers = ESTATE_OWNER, ESTATE_MANAGER, 12345678-1234-1234-1234-123456789abc	                            

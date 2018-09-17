@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Contributors, https://github.com/jonc/osboids
+ * https://github.com/JakDaniels/OpenSimBirds
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,47 +35,59 @@ namespace Flocking
 	public class FlowMap
 	{
 		private Scene m_scene;
-		private float[,,] m_flowMap = new float[256,256,256];
+        private float[, ,] m_flowMap;
+        private uint regionX;
+        private uint regionY;
+        private uint regionZ;
+        private float regionBorder;
 		
-		public FlowMap (Scene scene)
+		public FlowMap (Scene scene, int maxHeight, float borderSize)
 		{
 			m_scene = scene;
+            regionX = m_scene.RegionInfo.RegionSizeX;
+            regionY = m_scene.RegionInfo.RegionSizeY;
+            regionZ = (uint)maxHeight;
+            regionBorder = borderSize;
+            m_flowMap = new float[regionX, regionY, regionZ];
 		}
 		
 		public int LengthX {
-			get {return 256;}
+			get {return (int)regionX;}
 		}
 		public int LengthY {
-			get {return 256;}
+			get {return (int)regionY;}
 		}
 		public int LengthZ {
-			get {return 256;}
+			get {return (int)regionZ;}
 		}
+        public int Border  {
+            get {return (int)regionBorder;}
+        }
 		
 		public void Initialise() {
 			//fill in the boundaries
-			for( int x = 0; x < 256; x++ ) {
-				for( int y = 0; y < 256; y++ ) {
+			for( int x = 0; x < regionX; x++ ) {
+				for( int y = 0; y < regionY; y++ ) {
 					m_flowMap[x,y,0] = 100f;
-					m_flowMap[x,y,255] = 100f;
+					m_flowMap[x,y, regionZ-1] = 100f;
 				}
 			}
-			for( int x = 0; x < 256; x++ ) {
-				for( int z = 0; z < 256; z++ ) {
+			for( int x = 0; x < regionX; x++ ) {
+				for( int z = 0; z < regionZ; z++ ) {
 					m_flowMap[x,0,z] = 100f;
-					m_flowMap[x,255,z] = 100f;
+					m_flowMap[x,regionY-1,z] = 100f;
 				}
 			}
-			for( int y = 0; y < 256; y++ ) {
-				for( int z = 0; z < 256; z++ ) {
+			for( int y = 0; y < regionY; y++ ) {
+				for( int z = 0; z < regionZ; z++ ) {
 					m_flowMap[0,y,z] = 100f;
-					m_flowMap[255,y,z] = 100f;
+					m_flowMap[regionX-1,y,z] = 100f;
 				}
 			}
 			
 			//fill in the terrain
-			for( int x = 0; x < 256; x++ ) {
-				for( int y = 0; y < 256; y++ ) {
+			for( int x = 0; x < regionX; x++ ) {
+				for( int y = 0; y < regionY; y++ ) {
 					int zMax = Convert.ToInt32(m_scene.GetGroundHeight( x, y ));
 					for( int z = 1; z < zMax; z++ ) {
 						m_flowMap[x,y,z] = 100f;
@@ -127,12 +140,12 @@ namespace Flocking
 		
 		public bool IsOutOfBounds(Vector3 targetPos) {
 			bool retVal = false;
-			if( targetPos.X < 5f ||
-				targetPos.X > 250f ||
-				targetPos.Y < 5f ||
-				targetPos.Y > 250f ||
-				targetPos.Z < 5f ||
-				targetPos.Z > 250f ) {
+			if( targetPos.X < regionBorder ||
+				targetPos.X > regionX - regionBorder ||
+                targetPos.Y < regionBorder ||
+				targetPos.Y > regionY - regionBorder ||
+				targetPos.Z < regionBorder ||
+				targetPos.Z > regionZ - regionBorder ) {
 				
 				retVal = true;
 			}
@@ -169,9 +182,12 @@ namespace Flocking
 		
 		public bool IsWithinObstacle( int x, int y, int z ) {
 			bool retVal = false;
-			if( x > LengthX || y > LengthY || z > LengthZ ) {
+            if (x >= LengthX || y >= LengthY || z >= LengthZ)
+            {
 				retVal = true;
-			} else if( x < 0 || y < 0 || z < 0 ) {
+            }
+            else if (x < 0 || y < 0 || z < 0)
+            {
 				retVal = true;
 			} else if (m_flowMap[x,y,z] > 50f) {
 				retVal = true;
